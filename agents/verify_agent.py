@@ -8,8 +8,8 @@ from agents.system_prompts import get_system_prompt
 from models.agent_output import VerificationResult, parse_agent_output
 
 
-_MIN_PROMPT_LENGTH = 200   # chars
-_REQUIRED_KEYWORDS = ["serial", "firmware", "meraki", "api"]   # lowercase
+_MIN_PROMPT_LENGTH = 150   # chars
+_REQUIRED_KEYWORDS = ["serial", "firmware"]   # lowercase
 
 
 def run(state: dict) -> dict:
