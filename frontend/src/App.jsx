@@ -901,9 +901,10 @@ export default function App() {
 
                   {/* Card 4: Total Alerts with Active & Resolved Breakdown */}
                   {(() => {
-                    const activeAlertsCount = allAlerts.filter(a => !a.resolved).length;
-                    const resolvedAlertsCount = allAlerts.filter(a => a.resolved).length;
-                    const totalAlerts = allAlerts.length;
+                    const displayAlerts = filteredAlerts;
+                    const activeAlertsCount = displayAlerts.filter(a => !a.resolved).length;
+                    const resolvedAlertsCount = displayAlerts.filter(a => a.resolved).length;
+                    const totalAlerts = displayAlerts.length;
 
                     return (
                       <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
@@ -918,7 +919,7 @@ export default function App() {
                           <span className="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">
                             {activeAlertsCount} Active
                           </span>
-                          {timespan !== 3600 && (
+                          {resolvedAlertsCount > 0 && (
                             <span className="font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
                               {resolvedAlertsCount} Resolved
                             </span>
