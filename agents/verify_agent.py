@@ -27,9 +27,16 @@ def run(state: dict) -> dict:
     if "thiết bị" not in prompt_lower and "device" not in prompt_lower and "serial" not in prompt_lower:
         issues.append("Prompt thiếu thông tin định danh thiết bị / serial / model.")
 
-    # Agent Findings Section Check
-    if "báo cáo số liệu từ ai agents" not in prompt_lower and "thông số" not in prompt_lower:
-        issues.append("Prompt thiếu phần tổng hợp số liệu từ các AI Sub-Agents.")
+    # Missing Telemetry Section & Callback Check
+    missing_agents = []
+    if "audit log" not in prompt_lower and "lịch sử thay đổi" not in prompt_lower:
+        missing_agents.append("audit_config")
+    if "switch port" not in prompt_lower and "cổng" not in prompt_lower:
+        missing_agents.append("switch_port")
+
+    state["missing_agents"] = missing_agents
+    if missing_agents:
+        issues.append(f"Thiếu thông tin telemetry từ các sub-agent: {missing_agents}.")
 
     # Output Intent Directive Check
     required_intent = "dựa vào những thông tin trên hãy kiểm tra và đưa ra kết luận"

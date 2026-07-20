@@ -649,6 +649,18 @@ def run_analyze_pipeline(alert_data: dict, org_data: dict, model_mode: str = Non
             prev_prompt = current_prompt
 
             state = verify_agent.run(state)
+            missing = state.get("missing_agents", [])
+            if missing and loop_count == 1:
+                print(f"[Pipeline] 🔄 Callback Re-Trigger: VerifyAgent detected missing telemetry. Re-running sub-agents: {missing}...")
+                if "audit_config" in missing:
+                    try: run_audit_config()
+                    except Exception: pass
+                if "switch_port" in missing:
+                    try: run_specialized()
+                    except Exception: pass
+                # Re-synthesize prompt after callback fetch
+                state = prompt_agent.run(state, provider=mode)
+
             if state.get("verification_passed"):
                 print(f"[Pipeline] VerifyAgent approved prompt quality on cycle {loop_count}.")
                 break
