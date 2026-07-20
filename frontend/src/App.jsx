@@ -1099,8 +1099,21 @@ export default function App() {
 
                 {/* 3. TABLE A: CENTRALIZED ALERTS QUEUE (TABLE 1) */}
                 {(() => {
-                  const activeCount = filteredAlerts.filter(a => !a.resolved).length;
-                  const resolvedCount = filteredAlerts.filter(a => a.resolved).length;
+                  const baseAlerts = allAlerts.filter(a => {
+                    if (table1Search) {
+                      const q = table1Search.toLowerCase();
+                      return (a.device || '').toLowerCase().includes(q) ||
+                        (a.issue || '').toLowerCase().includes(q) ||
+                        (a.orgName || '').toLowerCase().includes(q) ||
+                        (a.serial || '').toLowerCase().includes(q) ||
+                        (a.model || '').toLowerCase().includes(q);
+                    }
+                    return true;
+                  });
+
+                  const totalCount = baseAlerts.length;
+                  const activeCount = baseAlerts.filter(a => !a.resolved).length;
+                  const resolvedCount = baseAlerts.filter(a => a.resolved).length;
 
                   return (
                     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all hover:shadow-md">
@@ -1111,7 +1124,7 @@ export default function App() {
                             Bảng 1: Hộp chẩn đoán cảnh báo liên kết Org
                           </span>
                           <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full text-[10px]">
-                            {allAlerts.length} Total
+                            {totalCount} Total
                           </span>
                         </div>
 
@@ -1140,7 +1153,7 @@ export default function App() {
                               onClick={() => setTable1Filter('all')}
                               className={`px-2.5 py-1 rounded-md transition-all ${table1Filter === 'all' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'hover:text-gray-900'}`}
                             >
-                              Tất cả ({allAlerts.length})
+                              Tất cả ({totalCount})
                             </button>
                             <button
                               onClick={() => setTable1Filter('active')}
@@ -1148,14 +1161,12 @@ export default function App() {
                             >
                               Hoạt động ({activeCount})
                             </button>
-                            {timespan !== 3600 && (
-                              <button
-                                onClick={() => setTable1Filter('resolved')}
-                                className={`px-2.5 py-1 rounded-md transition-all ${table1Filter === 'resolved' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'hover:text-gray-900'}`}
-                              >
-                                Đã xử lý ({resolvedCount})
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setTable1Filter('resolved')}
+                              className={`px-2.5 py-1 rounded-md transition-all ${table1Filter === 'resolved' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'hover:text-gray-900'}`}
+                            >
+                              Đã xử lý ({resolvedCount})
+                            </button>
                           </div>
                         </div>
                       </div>
