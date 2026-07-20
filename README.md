@@ -91,7 +91,7 @@ docker compose up -d --build
 
 ```
 MerakiMind/
-├── agents/                       # 23 AI Agent Modules
+├── agents/                       # 12 AI Agent Modules
 │   ├── coordinator.py            # Rule-based Incident Commander
 │   ├── consensus_agent.py        # 2-Phase Debate & Causal Chain Engine
 │   ├── prompt_agent.py           # Playbook & Telemetry Summarizer
