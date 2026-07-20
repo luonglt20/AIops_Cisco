@@ -136,4 +136,4 @@ MerakiMind/
 
 ## 🛡️ LICENSE & CREDITS
 
-Dự án phát triển bởi **Toan Luong / MerakiMind Team** phục vụ giải pháp quản trị hạ tầng mạng AIOps tự động hóa trên nền tảng Cisco Meraki Ecosystem.
+Dự án phát triển bởi **Tuan Luong / CTS Team** phục vụ giải pháp quản trị hạ tầng mạng AIOps tự động hóa trên nền tảng Cisco Meraki Ecosystem.
