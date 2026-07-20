@@ -13,7 +13,7 @@
 ## 🌟 TÍNH NĂNG NỔI BẬT (KEY FEATURES)
 
 - **📡 80 Cisco Meraki Dashboard REST APIs Coverage**: Tích hợp toàn bộ 80 REST APIs từ giám sát phần cứng, telemetry vô tuyến RF, switch ports, MT sensors, Cisco Umbrella SIG, đến SD-WAN Traffic Shaping.
-- **🤖 23 Multi-Agent AI Engine**: Kiến trúc Blackboard phân vai 12 Agent chuyên biệt (DeviceIntel, EventLog, ClientImpact, UplinkWAN, AuditConfig, AppQoE, RFWireless, SwitchPort, WanSdwan, SensorIoT, SecurityAirMarshal, FirmwareCrash) điều hành bởi `CoordinatorAgent`.
+- **🤖 12 Multi-Agent AI Engine**: Kiến trúc Blackboard phân vai 12 Agent chuyên biệt (DeviceIntel, EventLog, ClientImpact, UplinkWAN, AuditConfig, AppQoE, RFWireless, SwitchPort, WanSdwan, SensorIoT, SecurityAirMarshal, FirmwareCrash) điều hành bởi `CoordinatorAgent`.
 - **⚡ ReAct Autonomous Live Tools**: Tự động kích hoạt công cụ đo kiểm trực tiếp trên phần cứng qua API (Live Ping, Cable Test TDR, Speedtest Throughput, ARP Table, Traceroute, PCAP Capture, MTR).
 - **🔄 Dual/Triple-Model Benchmarking**: Chạy đối soát chất lượng prompt & đo đếm độ trễ song song giữa **Groq (Llama 3.3 70B)**, **Google Gemini 1.5** và **Ollama Local AI**.
 - **🧠 Zero-Hallucination & Quality Control**: Kiểm soát ảo giác với `VerifyAgent` sử dụng Pydantic Schema `VerificationResult` và Ground Truth Telemetry Binding.
