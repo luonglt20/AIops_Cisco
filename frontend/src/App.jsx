@@ -658,6 +658,20 @@ export default function App() {
     return "Unified Debate & Verdict";
   };
 
+  const filteredAlerts = allAlerts.filter(a => {
+    if (table1Filter === 'active' && a.resolved) return false;
+    if (table1Filter === 'resolved' && !a.resolved) return false;
+    if (table1Search) {
+      const q = table1Search.toLowerCase();
+      return (a.device || '').toLowerCase().includes(q) ||
+        (a.issue || '').toLowerCase().includes(q) ||
+        (a.orgName || '').toLowerCase().includes(q) ||
+        (a.serial || '').toLowerCase().includes(q) ||
+        (a.model || '').toLowerCase().includes(q);
+    }
+    return true;
+  });
+
   return (
     <div className="h-screen bg-[#f5f6f8] text-[#1d1d1f] flex flex-col antialiased select-none overflow-hidden font-sans grid-bg">
 
@@ -1085,22 +1099,8 @@ export default function App() {
 
                 {/* 3. TABLE A: CENTRALIZED ALERTS QUEUE (TABLE 1) */}
                 {(() => {
-                  const activeCount = allAlerts.filter(a => !a.resolved).length;
-                  const resolvedCount = allAlerts.filter(a => a.resolved).length;
-
-                  const filteredAlerts = allAlerts.filter(a => {
-                    if (table1Filter === 'active' && a.resolved) return false;
-                    if (table1Filter === 'resolved' && !a.resolved) return false;
-                    if (table1Search) {
-                      const q = table1Search.toLowerCase();
-                      return (a.device || '').toLowerCase().includes(q) ||
-                        (a.issue || '').toLowerCase().includes(q) ||
-                        (a.orgName || '').toLowerCase().includes(q) ||
-                        (a.serial || '').toLowerCase().includes(q) ||
-                        (a.model || '').toLowerCase().includes(q);
-                    }
-                    return true;
-                  });
+                  const activeCount = filteredAlerts.filter(a => !a.resolved).length;
+                  const resolvedCount = filteredAlerts.filter(a => a.resolved).length;
 
                   return (
                     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all hover:shadow-md">
