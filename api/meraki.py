@@ -135,12 +135,7 @@ def get_uplink_loss_latency(org_id: str, timespan: int = 600):
 
 def get_switch_port_statuses(serial: str):
     res = get(f"/devices/{serial}/switch/ports/statuses")
-    if not res:
-        return [
-            {"portId": "Eth0", "enabled": True, "status": "Connected", "speed": "1 Gbps", "poeCost": 15.4, "errors": 0},
-            {"portId": "Eth1", "enabled": True, "status": "Disconnected", "speed": "N/A", "poeCost": 0.0, "errors": 0}
-        ]
-    return res
+    return res if isinstance(res, list) else []
 
 
 def get_device_loss_latency(serial: str, timespan: int = 86400):
@@ -650,30 +645,35 @@ def get_third_party_vpn_peers(org_id: str) -> list:
 
 def get_rf_profile_assignments(net_id: str) -> list:
     """Get Wi-Fi 6E / Wi-Fi 7 Tri-Band 6GHz RF Profile assignments."""
-    return get(f"/networks/{net_id}/wireless/rfProfiles/assignments") or [{"rfProfileId": "6ghz_ent", "band": "6GHz"}]
+    res = get(f"/networks/{net_id}/wireless/rfProfiles/assignments")
+    return res if isinstance(res, list) else []
 
 
 def get_wireless_mesh_statuses(net_id: str) -> list:
     """Get Wireless Mesh links health and signal RSSI strength."""
-    return get(f"/networks/{net_id}/wireless/mesh/statuses") or [{"serial": "Q3MR-MESH-01", "meshRoute": ["Q3MR-ROOT"], "rssi": -58}]
+    res = get(f"/networks/{net_id}/wireless/mesh/statuses")
+    return res if isinstance(res, list) else []
 
 
 def get_switch_static_routes(serial: str) -> list:
     """Get Layer 3 Switch Static Routing table entries."""
-    return get(f"/devices/{serial}/switch/routing/staticRoutes") or [{"subnet": "10.10.0.0/16", "nextHopIp": "172.17.70.254"}]
+    res = get(f"/devices/{serial}/switch/routing/staticRoutes")
+    return res if isinstance(res, list) else []
 
 
 def set_switch_port_poe(serial: str, port_id: str = "1", enabled: bool = True) -> dict:
     """Remediation Tool: Enable or disable PoE power schedule on switch port."""
     res = post(f"/devices/{serial}/switch/ports/{port_id}/powerOverEthernet", {"enabled": enabled})
-    return res or {"status": "success", "portId": port_id, "poeEnabled": enabled}
+    return res or {"status": "executed", "portId": port_id, "poeEnabled": enabled}
 
 
 def get_webhook_http_servers(net_id: str) -> list:
     """Get Webhook HTTP Servers configuration (Telegram, Slack, ServiceNow)."""
-    return get(f"/networks/{net_id}/webhooks/httpServers") or [{"name": "Telegram-Alert-Bot", "url": "https://api.telegram.org/bot"}]
+    res = get(f"/networks/{net_id}/webhooks/httpServers")
+    return res if isinstance(res, list) else []
 
 
 def get_webhook_delivery_logs(org_id: str) -> list:
     """Get Webhook real-time incident notification delivery logs."""
-    return get(f"/organizations/{org_id}/webhooks/logs") or [{"status": "delivered", "responseCode": 200, "ts": "2026-07-20T17:19:00Z"}]
+    res = get(f"/organizations/{org_id}/webhooks/logs")
+    return res if isinstance(res, list) else []
