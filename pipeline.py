@@ -153,7 +153,7 @@ def _fetch_org_summary(org: dict, timespan: int = 604800) -> dict:
             has_existing = any(k.startswith(f"{dev_serial}:") or k.startswith(f"{dev_name}:") for k in alert_map if dev_serial or dev_name)
             if not has_existing:
                 key = f"{dev_serial or dev_name}:Device is {status}"
-                sev = "HIGH" if status in ("alerting", "offline") else "MEDIUM"
+                sev = "CRITICAL" if status in ("alerting", "offline") else "WARNING"
                 alert_map[key] = {
                     "severity":  sev,
                     "device":    dev_name,
@@ -184,8 +184,9 @@ def _fetch_org_summary(org: dict, timespan: int = 604800) -> dict:
             if any(kw in ev_type.lower() or kw in ev_desc.lower() for kw in anomaly_keywords):
                 key = f"{dev_name}:{ev_type}"
                 if key not in alert_map:
+                    is_crit = any(kw in ev_type.lower() or kw in ev_desc.lower() for kw in ("unreachable", "offline", "down", "fail"))
                     alert_map[key] = {
-                        "severity":  "MEDIUM",
+                        "severity":  "CRITICAL" if is_crit else "WARNING",
                         "device":    dev_name,
                         "model":     ev.get("deviceModel", ""),
                         "serial":    ev.get("deviceSerial", ""),
@@ -242,7 +243,7 @@ def _fetch_org_summary(org: dict, timespan: int = 604800) -> dict:
 
                     key = f"{dev_serial}:{alert_type_id}:{occurred_at}"
                     alert_map[key] = {
-                        "severity":  "HIGH" if not pending_resolution else "LOW",
+                        "severity":  "CRITICAL" if not pending_resolution else "RESOLVED",
                         "device":    dev_name,
                         "model":     dev_model,
                         "serial":    dev_serial,
