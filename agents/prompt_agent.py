@@ -361,19 +361,25 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
             return
         seen_labels.add(label)
 
-        # Clean up boilerplate text
+        # Clean up confidence badges
         display_note = raw_note.replace("[Confidence: HIGH] ", "").replace("[Confidence: MEDIUM] ", "").replace("[Confidence: LOW] ", "")
-        display_note = display_note.replace("  * ", "    - ").replace("  + ", "      - ").replace("* ", "  - ").replace("+ ", "    - ")
         
-        # Filter out repetitive preambles
+        # Line-by-line bullet normalization & markdown repair without corrupting bold **text**
         lines = []
-        for l in display_note.split("\n"):
-            l_str = l.strip()
+        for line in display_note.split("\n"):
+            l_str = line.strip()
             if l_str.startswith("Dựa vào tool") and "thu được" in l_str:
                 continue  # strip repetitive tool preambles
-            if l_str:
-                lines.append(l)
-        
+            if not l_str:
+                continue
+
+            # Convert leading bullets (*, +) to (-) without touching bold **
+            cleaned_line = re.sub(r"^(\s*)[*+](?!\*)\s*", r"\1- ", line)
+            
+            # Repair orphaned broken bold markers like "**text:*" -> "**text:**"
+            cleaned_line = re.sub(r"\*\*([^*]+):\*(?!\*)", r"**\1:**", cleaned_line)
+            lines.append(cleaned_line)
+
         indented_note = "\n".join([f"  {line}" for line in lines])
         active_notes.append(f"• {label}:\n{indented_note}\n")
 
