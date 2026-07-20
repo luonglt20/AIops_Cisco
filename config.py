@@ -16,7 +16,15 @@ if env_path.exists():
 # ─────────────────────────────────────────────────
 
 MERAKI_API_KEY = os.getenv("MERAKI_API_KEY", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+_raw_gemini_keys = os.getenv("GEMINI_API_KEYS", "").split(",")
+GEMINI_API_KEYS = [k.strip() for k in _raw_gemini_keys if k.strip()]
+if not GEMINI_API_KEYS:
+    single_gemini = os.getenv("GEMINI_API_KEY", "")
+    if single_gemini:
+        GEMINI_API_KEYS = [single_gemini]
+
+GEMINI_API_KEY = GEMINI_API_KEYS[0] if GEMINI_API_KEYS else ""
 
 _raw_groq_keys = os.getenv("GROQ_API_KEYS", "").split(",")
 GROQ_API_KEYS = [k.strip() for k in _raw_groq_keys if k.strip()]

@@ -246,7 +246,8 @@ def _call_gemini(
     max_tokens: int,
     timeout: int,
 ) -> str:
-    """Call Gemini 2.5 Flash with thinking mode enabled + system instruction."""
+    """Call Gemini 2.5 Flash with thinking mode + multi-key rotation."""
+    from config import GEMINI_API_KEYS, GEMINI_API_KEY
     combined_prompt = f"{system_prompt}\n\n{prompt}"
 
     gemini_payload = json.dumps({
@@ -255,27 +256,38 @@ def _call_gemini(
             "temperature":     temperature,
             "maxOutputTokens": max_tokens,
             "thinkingConfig": {
-                "thinkingBudget": 1024   # Enable Flash Thinking for better reasoning
+                "thinkingBudget": 1024
             },
         },
     }).encode()
 
-    req = urllib.request.Request(
-        GEMINI_URL,
-        data=gemini_payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        print("[LLM Router] Gemini 2.5 Flash (thinking mode)...")
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            data = json.loads(r.read().decode())
-            content = data["candidates"][0]["content"]["parts"][0]["text"]
-            print(f"[LLM Router] Gemini ✅ ({len(content)} chars)")
-            return content
-    except Exception as e:
-        print(f"[LLM Router] Gemini failed: {e}")
+    keys = GEMINI_API_KEYS or ([GEMINI_API_KEY] if GEMINI_API_KEY else [])
+    if not keys:
+        print("[LLM Router] Gemini: No API key available.")
         return ""
+
+    for idx, key in enumerate(keys):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+        req = urllib.request.Request(
+            url,
+            data=gemini_payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            print(f"[LLM Router] Gemini 2.5 Flash (key {idx+1}/{len(keys)})...")
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                data = json.loads(r.read().decode())
+                content = data["candidates"][0]["content"]["parts"][0]["text"]
+                print(f"[LLM Router] Gemini ✅ ({len(content)} chars)")
+                return content
+        except urllib.error.HTTPError as e:
+            print(f"[LLM Router] Gemini key {idx+1} HTTP error {e.code}: {e.reason}. Trying next key...")
+        except Exception as e:
+            print(f"[LLM Router] Gemini key {idx+1} failed ({e}). Trying next key...")
+
+    print("[LLM Router] Gemini exhausted all available keys.")
+    return ""
 
 
 # ── Legacy wrapper (backward compat) ──────────────────────────────────────────
