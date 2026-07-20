@@ -42,4 +42,26 @@ SERVER_PORT = int(os.getenv("PORT", os.getenv("SERVER_PORT", 8765)))
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma4:e4b")
 
+# ─────────────────────────────────────────────────
+# Timezone Configuration (Vietnam ICT / UTC+7)
+# ─────────────────────────────────────────────────
+from datetime import datetime, timezone, timedelta
+
+VN_TZ = timezone(timedelta(hours=7))
+
+def to_vn_time(ts: str, fmt: str = "%d/%m/%Y %H:%M:%S") -> str:
+    """Converts a UTC ISO string or timestamp to Vietnam Timezone (UTC+7)."""
+    if not ts or not isinstance(ts, str):
+        return ts or ""
+    try:
+        clean_ts = ts.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(clean_ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        vn_dt = dt.astimezone(VN_TZ)
+        return vn_dt.strftime(fmt)
+    except Exception:
+        return ts
+
+
 

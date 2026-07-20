@@ -22,6 +22,8 @@ TOOL_REGISTRY = {
 }
 
 
+from config import to_vn_time
+
 def _tool_config_changes(org_id: str) -> str:
     if not org_id:
         return "Không có org_id."
@@ -32,7 +34,8 @@ def _tool_config_changes(org_id: str) -> str:
         
         formatted_logs = []
         for c in changes[:10]:
-            ts = c.get("ts", "")
+            ts_raw = c.get("ts", "")
+            ts_vn = to_vn_time(ts_raw, "%H:%M:%S") if ts_raw else "N/A"
             admin_name = c.get("adminName") or "Unknown Admin"
             admin_email = c.get("adminEmail") or "N/A"
             network_name = c.get("networkName") or "N/A"
@@ -42,7 +45,7 @@ def _tool_config_changes(org_id: str) -> str:
             new_val = c.get("newValue") or "N/A"
             
             formatted_logs.append(
-                f"• [{ts}] Admin: {admin_name} ({admin_email}) | Page: '{page}' | Port/Label: '{label}' | Network: '{network_name}'\n"
+                f"• [{ts_vn} (giờ VN)] Admin: {admin_name} ({admin_email}) | Page: '{page}' | Port/Label: '{label}' | Network: '{network_name}'\n"
                 f"  Thay đổi: {old_val} ➔ {new_val}"
             )
         return "\n".join(formatted_logs)
@@ -66,16 +69,16 @@ THÔNG TIN SỰ CỐ:
 - Cảnh báo: {alert.get('issue', 'Unknown')}
 - Org ID: {org_id}
 
-NHẬT KÝ THAY ĐỔI CẤU HÌNH THỰC TẾ (AUDIT LOGS):
+NHẬT KÝ THAY ĐỔI CẤU HÌNH THỰC TẾ (AUDIT LOGS - GIỜ VIỆT NAM UTC+7):
 {raw_changes}
 
-YÊU CẦU TRÌNH BÀY BẮT BỘC CHI TIẾT:
-1. TRÍCH XUẤT ĐẦY ĐỦ VÀ CHÍNH XÁC TỪNG MỐC THỜI GIAN:
-   - Nêu rõ Thời gian (Timestamp), Tên Admin, Email Admin, Tên Cổng/Switch (Label), và giá trị trước/sau (Old Value ➔ New Value).
-   - Ví dụ cụ thể: "Lúc 15:44:00, Admin CMC Duc (thongduc@cmc.com.vn) đã chuyển Cổng SW_Internal / 46 từ Port: enabled ➔ disabled."
+YÊU CẦU TRÌNH BÀY BẮT BỘC CHI TIẾT (ĐỔI MỐC THỜI GIAN THEO GIỜ VIỆT NAM UTC+7):
+1. TRÍCH XUẤT ĐẦY ĐỦ VÀ CHÍNH XÁC TỪNG MỐC THỜI GIAN THEO GIỜ VIỆT NAM (UTC+7):
+   - Nêu rõ Thời gian giờ VN, Tên Admin, Email Admin, Tên Cổng/Switch (Label), và giá trị trước/sau (Old Value ➔ New Value).
+   - Ví dụ cụ thể: "Lúc 22:44:00 (giờ VN), Admin CMC Duc (thongduc@cmc.com.vn) đã chuyển Cổng SW_Internal / 46 từ Port: enabled ➔ disabled."
 2. ĐÁNH GIÁ TÁC ĐỘNG VÀ CHUỖI NGUYÊN NHÂN:
    - Chỉ rõ hành động nào gây ra sự cố (ngắt nguồn PoE/tắt port) và hành động nào là thao tác sửa chữa khôi phục.
-3. Giữ định dạng rõ ràng, chuyên nghiệp, liệt kê chính xác các mốc sự kiện thực tế.
+3. Giữ định dạng rõ ràng, chuyên nghiệp, liệt kê chính xác các mốc sự kiện thực tế theo giờ Việt Nam.
 """
     sys_prompt = get_system_prompt("audit_config_agent")
     allowed = state.get("allowed_tools", [])

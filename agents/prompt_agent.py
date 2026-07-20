@@ -461,8 +461,10 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
     return state
 
 
+from config import to_vn_time
+
 def _fmt_ts(ts: str) -> str:
-    try:
-        return datetime.fromisoformat(ts.replace("Z", "+00:00")).strftime("%d/%m/%Y %H:%M")
-    except Exception:
-        return ts or "N/A"
+    if not ts:
+        return "N/A"
+    res = to_vn_time(ts, "%d/%m/%Y %H:%M")
+    return f"{res} (giờ VN)" if res and "/" in res else res
