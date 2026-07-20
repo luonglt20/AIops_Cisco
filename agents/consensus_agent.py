@@ -22,24 +22,42 @@ def run_consensus(state: dict) -> str:
     """
     print("[ConsensusAgent v5.0] Initiating 2-phase multi-agent diagnostic debate...")
 
-    notes_di  = state.get("notes_device_intel",     "")
-    notes_co  = state.get("notes_correlation_agent","")
-    notes_el  = state.get("notes_event_log",         "")
-    notes_ca  = state.get("notes_client_agent",      "")
-    notes_ua  = state.get("notes_uplink_agent",      "")
-    telemetry = state.get("telemetry",               {})
-    alert     = state.get("alert",                   {})
-    dev       = state.get("device_detail",           {})
+    notes_di  = state.get("notes_device_intel", "")
+    notes_co  = state.get("notes_correlation_agent", "")
+    notes_el  = state.get("notes_event_log", "")
+    notes_ca  = state.get("notes_client_agent", "")
+    notes_ua  = state.get("notes_uplink_agent", "")
+    notes_ac  = state.get("notes_audit_config", "")
+    notes_aq  = state.get("notes_app_qoe", "")
+    notes_sa  = state.get("notes_security_airmarshal_agent", "")
+    notes_fc  = state.get("notes_firmware_crash_agent", "")
+    notes_si  = state.get("notes_sensor_iot_agent", "")
+    notes_rf  = state.get("notes_rf_wireless_agent", "")
+    notes_sp  = state.get("notes_switch_port_agent", "")
+    notes_ws  = state.get("notes_wan_sdwan_agent", "")
+    notes_cx  = state.get("notes_client_experience_agent", "")
+    telemetry = state.get("telemetry", {})
+    alert     = state.get("alert", {})
+    dev       = state.get("device_detail", {})
 
     # Build agent report blocks
     route = state.get("route", {})
     agent_reports = []
     report_map = {
-        "DeviceIntel [Phần cứng & Firmware]":  notes_di if route.get("run_device_intel", True) else "",
-        "CorrelationAgent [Tương quan chéo]":   notes_co if route.get("run_correlation_agent", True) else "",
-        "EventLog [Nhật ký sự kiện]":           notes_el if route.get("run_event_log", True) else "",
-        "ClientAgent [Tác động người dùng]":    notes_ca if route.get("run_client_agent", True) else "",
-        "UplinkAgent [WAN & Kết nối]":          notes_ua if route.get("run_uplink_agent", True) else "",
+        "DeviceIntel [Phần cứng & Firmware]": notes_di if route.get("run_device_intel", True) else "",
+        "CorrelationAgent [Tương quan chéo]": notes_co if route.get("run_correlation_agent", True) else "",
+        "EventLog [Nhật ký sự kiện]": notes_el if route.get("run_event_log", True) else "",
+        "ClientAgent [Tác động người dùng]": notes_ca if route.get("run_client_agent", True) else "",
+        "UplinkAgent [WAN & Kết nối]": notes_ua if route.get("run_uplink_agent", True) else "",
+        "AuditConfigAgent [Nhật ký thay đổi cấu hình Audit]": notes_ac if route.get("run_audit_config", True) else "",
+        "AppQoEAgent [Trải nghiệm ứng dụng & VoIP]": notes_aq if route.get("run_app_qoe", True) else "",
+        "SecurityAirMarshalAgent [Bảo mật vô tuyến AirMarshal]": notes_sa,
+        "FirmwareCrashAgent [Firmware & Crashes]": notes_fc,
+        "SensorIoTAgent [Cảm biến IoT & Môi trường]": notes_si,
+        "RfWirelessAgent [Tần số vô tuyến RF]": notes_rf,
+        "SwitchPortAgent [Cổng Switch & Cáp TDR]": notes_sp,
+        "WanSdwanAgent [Gateway & SD-WAN Path]": notes_ws,
+        "ClientExperienceAgent [Trải nghiệm Wi-Fi Client]": notes_cx,
     }
     for label, note in report_map.items():
         if note and "Bỏ Qua" not in note and len(note.strip()) > 15:

@@ -731,21 +731,20 @@ def run_analyze_pipeline(alert_data: dict, org_data: dict, model_mode: str = Non
         f"Uplink WAN Agent: {state.get('notes_uplink_agent', '')}",
     ]
     
-    assigned = state.get("assigned_agent")
-    if assigned == "security_airmarshal_agent":
-        state["agent_notes"].append(f"Security & AirMarshal Agent: {state.get('notes_security_airmarshal_agent')}")
-    elif assigned == "firmware_crash_agent":
-        state["agent_notes"].append(f"Firmware & Crash Agent: {state.get('notes_firmware_crash_agent')}")
-    elif assigned == "sensor_iot_agent":
-        state["agent_notes"].append(f"Sensor IoT Agent: {state.get('notes_sensor_iot_agent')}")
-    elif assigned == "rf_wireless_agent":
-        state["agent_notes"].append(f"RF Wireless Agent: {state.get('notes_rf_wireless_agent')}")
-    elif assigned == "switch_port_agent":
-        state["agent_notes"].append(f"Switch Port Agent: {state.get('notes_switch_port_agent')}")
-    elif assigned == "wan_sdwan_agent":
-        state["agent_notes"].append(f"WAN SD-WAN Agent: {state.get('notes_wan_sdwan_agent')}")
-    else:
-        state["agent_notes"].append(f"Client Experience Agent: {state.get('notes_client_experience_agent')}")
+    # Append any specialized agent notes if present
+    spec_agents = [
+        ("Security & AirMarshal Agent", "notes_security_airmarshal_agent"),
+        ("Firmware & Crash Agent", "notes_firmware_crash_agent"),
+        ("Sensor IoT Agent", "notes_sensor_iot_agent"),
+        ("RF Wireless Agent", "notes_rf_wireless_agent"),
+        ("Switch Port Agent", "notes_switch_port_agent"),
+        ("WAN SD-WAN Agent", "notes_wan_sdwan_agent"),
+        ("Client Experience Agent", "notes_client_experience_agent"),
+    ]
+    for label, key in spec_agents:
+        note = state.get(key)
+        if note and "Bỏ Qua" not in note and note.strip():
+            state["agent_notes"].append(f"{label}: {note}")
     
     if mode == "dual":
         state["agent_notes"].append("VerifyAgent (Quality Control): 📊 Đã đối soát chất lượng song song các mô hình.")

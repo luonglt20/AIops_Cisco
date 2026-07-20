@@ -16,16 +16,25 @@ def run(state: dict) -> dict:
     notes_el = state.get("notes_event_log", "Không phát hiện bất thường.")
     notes_ca = state.get("notes_client_agent", "Không ảnh hưởng.")
     notes_ua = state.get("notes_uplink_agent", "Ổn định.")
+    notes_ac = state.get("notes_audit_config", "")
+    notes_aq = state.get("notes_app_qoe", "")
+    notes_sa = state.get("notes_security_airmarshal_agent", "")
+    notes_fc = state.get("notes_firmware_crash_agent", "")
+    notes_si = state.get("notes_sensor_iot_agent", "")
+    notes_rf = state.get("notes_rf_wireless_agent", "")
+    notes_sp = state.get("notes_switch_port_agent", "")
+    notes_ws = state.get("notes_wan_sdwan_agent", "")
 
     prompt = f"""You are an IT Infrastructure Director communicating with Company Executives and HR.
 Translate the following complex technical network diagnostic findings into a highly specific, professional, and action-oriented status report in Vietnamese.
 
 == CRITICAL DIRECTIONS FOR PROFESSIONAL TONE ==
 1. DO NOT use generic boilerplate sentences or clichés (e.g., "Sự cố mạng nghiêm trọng xảy ra...", "IT đang triển khai kiểm tra và phân tích...", "sẽ được cập nhật sau..."). These are weak and non-informative.
-2. BE SPECIFIC and quantitative: You must include exact device names, models, and numbers (e.g., "12.4W", "8 clients", "39.7ms latency") as concrete evidence of the issue.
+2. BE SPECIFIC and quantitative: You must include exact device names, models, numbers, and admin names (e.g., "12.4W", "8 clients", "39.7ms latency", "Admin CMC Duc") as concrete evidence of the issue.
 3. PROVIDE CONCRETE REMEDIATION PLANS:
-   - If the issue is insufficient PoE power (e.g. 12.4W vs 25.5W required for MR46): State that IT is configuring the switch port to PoE+ (802.3at) or replacing it with a 30W PoE Injector, with an estimated completion time of 15 minutes.
-   - If the issue is WAN loss/latency (e.g. high packet loss): State that IT is routing application traffic to the backup ISP (WAN2) via SD-WAN preference policies, with an estimated completion time of 10 minutes.
+   - If the issue is human error / config change: State exact admin account and port change.
+   - If the issue is insufficient PoE power: State that IT is configuring the switch port to PoE+ (802.3at) or replacing it with a 30W PoE Injector.
+   - If the issue is WAN loss/latency: State that IT is routing application traffic to backup ISP (WAN2).
 4. Keep the text professional, decisive, and direct.
 
 == TECHNICAL FINDINGS ==
@@ -37,6 +46,14 @@ Translate the following complex technical network diagnostic findings into a hig
 - Network Events: {notes_el}
 - Impact on Users: {notes_ca}
 - WAN/Internet Path: {notes_ua}
+- Audit & Config Changes: {notes_ac if notes_ac else 'Không có thay đổi cấu hình bất thường'}
+- Application QoE & VoIP: {notes_aq if notes_aq else 'Không suy hao'}
+- Wireless Security AirMarshal: {notes_sa if notes_sa else 'Bình thường'}
+- Firmware & Crashes: {notes_fc if notes_fc else 'Ổn định'}
+- Sensor IoT & Environment: {notes_si if notes_si else 'Bình thường'}
+- RF Spectrum & Wi-Fi: {notes_rf if notes_rf else 'Ổn định'}
+- Switch Port & Cable: {notes_sp if notes_sp else 'Bình thường'}
+- WAN SD-WAN Path: {notes_ws if notes_ws else 'Ổn định'}
 
 == OUTPUT STRUCTURE (MUST FOLLOW EXACTLY) ==
 📄 BÁO CÁO TÌNH TRẠNG SỰ CỐ MẠNG
