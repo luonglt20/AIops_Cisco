@@ -374,10 +374,6 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
             if l_str:
                 lines.append(l)
         
-        # Condense long lists (max 8 key lines per agent)
-        if len(lines) > 8:
-            lines = lines[:8] + ["  - (...) [Tóm tắt bớt các thông số chi tiết lặp lại]"]
-            
         indented_note = "\n".join([f"  {line}" for line in lines])
         active_notes.append(f"• {label}:\n{indented_note}\n")
 
