@@ -370,11 +370,14 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
             l_str = line.strip()
             if l_str.startswith("Dựa vào tool") and "thu được" in l_str:
                 continue  # strip repetitive tool preambles
-            if not l_str:
-                continue
+            if not l_str or l_str in ("***", "---", "___"):
+                continue  # strip markdown horizontal dividers
+
+            # Replace any triple or quadruple asterisks *** with standard bold **
+            cleaned_line = re.sub(r"\*{3,}", "**", line)
 
             # Convert leading bullets (*, +) to (-) without touching bold **
-            cleaned_line = re.sub(r"^(\s*)[*+](?!\*)\s*", r"\1- ", line)
+            cleaned_line = re.sub(r"^(\s*)[*+](?!\*)\s*", r"\1- ", cleaned_line)
             
             # Repair orphaned broken bold markers like "**text:*" -> "**text:**"
             cleaned_line = re.sub(r"\*\*([^*]+):\*(?!\*)", r"**\1:**", cleaned_line)
