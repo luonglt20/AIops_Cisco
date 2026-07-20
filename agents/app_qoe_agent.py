@@ -43,10 +43,10 @@ def _tool_app_health(net_id: str) -> str:
 
 
 def analyze_with_llm(state: dict) -> str:
-    org_id = state.get("org_id", "")
-    alert = state.get("alert_data", {})
-    serial = state.get("serial", "")
-    net_id = state.get("network_id", "")
+    org_id = state.get("org_id") or state.get("org", {}).get("id", "")
+    alert  = state.get("alert_data") or state.get("alert", {})
+    serial = state.get("serial") or state.get("resolved_serial", "")
+    net_id = state.get("network_id") or state.get("resolved_net_id", "")
 
     media_data = _tool_media_servers(org_id)
     app_data = _tool_app_health(net_id)
