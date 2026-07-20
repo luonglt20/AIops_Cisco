@@ -317,37 +317,57 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
     org_name = org_data.get("name", "?")
     org_id   = org_data.get("id", "?")
 
-    # Collect active blackboard notes
+    # Collect active blackboard notes dynamically from both state and blackboard
     active_notes = []
-    telemetry_labels = [
-        ("device_intel",                "⚙️ Thông số Thiết bị & Phần cứng"),
-        ("event_log",                   "📋 Nhật ký Sự kiện"),
-        ("client_agent",                "👥 Tác động Người dùng"),
-        ("uplink_agent",                "🌐 Trạng thái Đường truyền WAN"),
-        ("audit_config",                "📝 Lịch sử Thay đổi Cấu hình (Audit Log)"),
-        ("app_qoe",                     "📊 Chất lượng Trải nghiệm Ứng dụng & VoIP"),
-        ("rf_wireless_agent",           "📡 Thu thập thông tin RF & Wireless"),
-        ("switch_port_agent",           "🔌 Thu thập thông tin Switch Port & Cáp"),
-        ("wan_sdwan_agent",             "🌐 Thu thập thông tin WAN & VPN"),
-        ("sensor_iot_agent",            "🌡️ Thu thập thông tin Sensor IoT"),
-        ("security_airmarshal_agent",   "🛡️ Thu thập thông tin Security & WIDS"),
-        ("client_experience_agent",     "📱 Thu thập thông tin Client Experience"),
-        ("firmware_crash_agent",        "🔥 Thu thập thông tin Firmware & Crash Log"),
-    ]
-    for key, label in telemetry_labels:
-        note = (
+    seen_labels = set()
+    agent_label_mapping = {
+        "device_intel": "⚙️ Thông số Thiết bị & Phần cứng",
+        "event_log": "📋 Nhật ký Sự kiện",
+        "client_agent": "👥 Tác động Người dùng",
+        "uplink_agent": "🌐 Trạng thái Đường truyền WAN",
+        "audit_config": "📝 Lịch sử Thay đổi Cấu hình (Audit Log)",
+        "audit_config_agent": "📝 Lịch sử Thay đổi Cấu hình (Audit Log)",
+        "app_qoe": "📊 Chất lượng Trải nghiệm Ứng dụng & VoIP",
+        "app_qoe_agent": "📊 Chất lượng Trải nghiệm Ứng dụng & VoIP",
+        "correlation_agent": "🔄 Phân tích Tương quan Chéo Mạng (Correlation)",
+        "correlation": "🔄 Phân tích Tương quan Chéo Mạng (Correlation)",
+        "rf_wireless_agent": "📡 Thu thập thông tin RF & Wireless",
+        "switch_port_agent": "🔌 Thu thập thông tin Switch Port & Cáp",
+        "wan_sdwan_agent": "🌐 Thu thập thông tin WAN & VPN",
+        "sensor_iot_agent": "🌡️ Thu thập thông tin Sensor IoT",
+        "security_airmarshal_agent": "🛡️ Thu thập thông tin Security & WIDS",
+        "client_experience_agent": "📱 Thu thập thông tin Client Experience",
+        "firmware_crash_agent": "🔥 Thu thập thông tin Firmware & Crash Log",
+    }
+
+    # Helper function to append note
+    def _add_note(key_name: str, raw_note: str):
+        if not raw_note or not isinstance(raw_note, str) or "Bỏ Qua" in raw_note or len(raw_note.strip()) <= 15:
+            return
+        clean_key = key_name.replace("notes_", "").replace("_agent", "")
+        label = agent_label_mapping.get(key_name) or agent_label_mapping.get(clean_key) or f"🤖 {key_name.title()}"
+        if label in seen_labels:
+            return
+        seen_labels.add(label)
+        display_note = raw_note.replace("[Confidence: HIGH] ", "").replace("[Confidence: MEDIUM] ", "").replace("[Confidence: LOW] ", "")
+        display_note = display_note.replace("  * ", "    - ").replace("  + ", "      - ").replace("* ", "  - ").replace("+ ", "    - ")
+        indented_note = "\n".join([f"  {line}" for line in display_note.split("\n")])
+        active_notes.append(f"• {label}:\n{indented_note}\n")
+
+    # 1. Scan predefined labels list first for consistent ordering
+    for key in agent_label_mapping.keys():
+        note_val = (
             bb.get(key, "") or
             bb.get(f"{key}_agent", "") or
             state.get(f"notes_{key}", "") or
             state.get(f"notes_{key}_agent", "")
         )
-        if note and "Bỏ Qua" not in note and len(note) > 20:
-            # Strip confidence tag for cleaner display
-            display_note = note.replace("[Confidence: HIGH] ", "").replace("[Confidence: MEDIUM] ", "").replace("[Confidence: LOW] ", "")
-            # Clean up messy markdown bullets from LLM agents
-            display_note = display_note.replace("  * ", "    - ").replace("  + ", "      - ").replace("* ", "  - ").replace("+ ", "    - ")
-            indented_note = "\n".join([f"  {line}" for line in display_note.split("\n")])
-            active_notes.append(f"• {label}:\n{indented_note}\n")
+        _add_note(key, note_val)
+
+    # 2. Scan remaining state notes_* keys for any custom agents
+    for k, v in state.items():
+        if k.startswith("notes_") and k not in ["notes_consensus", "notes_reporting", "notes_final_prompt"]:
+            _add_note(k, v)
 
     # Root causes string
     causes_str = "\n".join([
