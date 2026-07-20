@@ -1457,14 +1457,39 @@ export default function App() {
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">AUDIT CONFIG AGENT</span>
                               </div>
-                              <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">0 thay đổi cấu hình</span>
+                              <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">
+                                {parsedNotes['audit_config']?.content &&
+                                 !parsedNotes['audit_config'].content.includes('Không ghi nhận') &&
+                                 !parsedNotes['audit_config'].content.includes('Không có thay đổi') &&
+                                 !parsedNotes['audit_config'].content.includes('0 thay đổi')
+                                  ? (parsedNotes['audit_config'].content.includes('CMC') || parsedNotes['audit_config'].content.includes('Admin')
+                                      ? 'Phát hiện thao tác Admin (CMC Duc)'
+                                      : 'Phát hiện thay đổi cấu hình')
+                                  : '0 thay đổi cấu hình'}
+                              </span>
                               <div className="mt-1.5 flex flex-wrap gap-1">
-                                <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-tight">
-                                  0 CHANGES
-                                </span>
-                                <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-gray-50 text-gray-600 border border-gray-100 uppercase tracking-tight">
-                                  AUDIT LOG
-                                </span>
+                                {parsedNotes['audit_config']?.content &&
+                                 !parsedNotes['audit_config'].content.includes('Không ghi nhận') &&
+                                 !parsedNotes['audit_config'].content.includes('Không có thay đổi') &&
+                                 !parsedNotes['audit_config'].content.includes('0 thay đổi') ? (
+                                  <>
+                                    <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-red-50 text-red-700 border border-red-100 uppercase tracking-tight">
+                                      CHANGES DETECTED
+                                    </span>
+                                    <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-tight">
+                                      ADMIN MODIFIED
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-100 uppercase tracking-tight">
+                                      0 CHANGES
+                                    </span>
+                                    <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-gray-50 text-gray-600 border border-gray-100 uppercase tracking-tight">
+                                      AUDIT LOG
+                                    </span>
+                                  </>
+                                )}
                               </div>
                               <div className="absolute top-1.5 right-1.5 flex items-center">
                                 {renderAgentBadgeStatus(getAgentRunningStatus('audit_config', 2))}
