@@ -1200,7 +1200,7 @@ export default function App() {
                                     <td className="py-3 px-4">
                                       <div className="flex items-center gap-1.5">
                                         <span className={`font-bold ${isOrgAlert ? 'text-slate-600 italic' : 'text-gray-800'}`}>
-                                          {a.device || 'Thiết bị không tên'}
+                                          {(a.device || 'Thiết bị không tên').replace(/^Network:\s*/, '')}
                                         </span>
                                         {a.model && (
                                           <span className="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded text-[9px] font-mono border border-slate-200">

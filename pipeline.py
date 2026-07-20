@@ -90,6 +90,15 @@ def _fetch_org_summary(org: dict, timespan: int = 604800) -> dict:
         if severity == "HIGH":
             severity = "CRITICAL"
 
+        # Extract nested device details from scope (Meraki Assurance API standard)
+        scope_devs = a.get("scope", {}).get("devices", []) if isinstance(a.get("scope"), dict) else []
+        if scope_devs and isinstance(scope_devs, list):
+            first_dev = scope_devs[0]
+            if isinstance(first_dev, dict):
+                if not serial: serial = first_dev.get("serial", "")
+                if not device: device = first_dev.get("name", "")
+                if not model:  model  = first_dev.get("productType", "") or first_dev.get("model", "")
+
         # 🟢 100% MERAKI GROUND TRUTH DEVICE & NETWORK RESOLVER
         if serial and serial in device_by_serial:
             dev_match = device_by_serial[serial]
@@ -100,7 +109,7 @@ def _fetch_org_summary(org: dict, timespan: int = 604800) -> dict:
         net_name = network_by_id.get(net_id, "")
         if not device:
             if net_name:
-                device = f"Network: {net_name}"
+                device = net_name
             elif net_id:
                 device = f"Network Scope ({net_id[:8]})"
             else:
