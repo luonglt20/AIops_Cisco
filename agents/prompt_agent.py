@@ -153,8 +153,6 @@ def run(state: dict, provider: str = None) -> dict:
     model_spec = get_model_specs(model)
     fw_warning = get_firmware_note(firmware)
     poe_note   = ""
-    if model_spec and model_spec.get("poe_required"):
-        poe_note = f"⚠️ PoE Requirement: {model} yêu cầu tối thiểu {model_spec['poe_required']}. {model_spec.get('notes','')}"
 
     # ── Semantic Memory: Retrieve Similar Incidents ───────────────────────────
     precedent_context = ""

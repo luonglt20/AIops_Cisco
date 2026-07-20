@@ -464,8 +464,6 @@ Dựa trên các chỉ số telemetry ở trên, hãy đưa ra đánh giá ảnh
 • Thiết bị      : {dev_name} | Model: {model} | Serial: {serial}
 • Cảnh báo      : {alert_type} (Mức độ: {status.upper()})
 
-⚠️ PoE Requirement: {model} yêu cầu tối thiểu PoE+ (802.3at, 25.5W) nếu là AP Wi-Fi 6 mật độ cao.
-
 📊 SỐ LIỆU TELEMETRY THU THẬP THỰC TẾ (GROUND TRUTH):
   - Thiết bị     : Model {model} (Trạng thái: ALERTING)
   - Nguồn cấp PoE: Cổng switch port 12 cấp nguồn đo được là {poe_val} (PoE overload/underpowered)
