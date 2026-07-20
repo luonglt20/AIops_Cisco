@@ -29,19 +29,23 @@ def _tool_config_changes(org_id: str) -> str:
         changes = meraki.get_org_config_changes(org_id, timespan=86400)
         if not changes:
             return "Không ghi nhận thay đổi cấu hình nào trong 24 giờ qua."
-        return json.dumps([
-            {
-                "ts": c.get("ts"),
-                "admin": c.get("adminName") or c.get("adminEmail"),
-                "adminEmail": c.get("adminEmail"),
-                "networkName": c.get("networkName"),
-                "page": c.get("page"),
-                "label": c.get("label"),
-                "oldValue": c.get("oldValue"),
-                "newValue": c.get("newValue"),
-            }
-            for c in changes[:10]
-        ], indent=2, ensure_ascii=False)
+        
+        formatted_logs = []
+        for c in changes[:10]:
+            ts = c.get("ts", "")
+            admin_name = c.get("adminName") or "Unknown Admin"
+            admin_email = c.get("adminEmail") or "N/A"
+            network_name = c.get("networkName") or "N/A"
+            page = c.get("page") or "N/A"
+            label = c.get("label") or "N/A"
+            old_val = c.get("oldValue") or "N/A"
+            new_val = c.get("newValue") or "N/A"
+            
+            formatted_logs.append(
+                f"• [{ts}] Admin: {admin_name} ({admin_email}) | Page: '{page}' | Port/Label: '{label}' | Network: '{network_name}'\n"
+                f"  Thay đổi: {old_val} ➔ {new_val}"
+            )
+        return "\n".join(formatted_logs)
     except Exception as e:
         return f"Lỗi truy vấn Audit Config Changes: {e}"
 
@@ -55,19 +59,23 @@ def analyze_with_llm(state: dict) -> str:
     raw_changes = _tool_config_changes(org_id)
 
     prompt = f"""Bạn là Tác nhân AI Chuyên gia Audit & Compliance (AuditConfigAgent).
-Nhiệm vụ: Phân tích nhật ký thay đổi cấu hình (Configuration Changes) dưới đây xem có thay đổi con người nào dẫn đến sự cố mạng này hay không.
+Nhiệm vụ: Phân tích và trích xuất chi tiết từng sự kiện thay đổi cấu hình (Configuration Changes Audit Log) từ người dùng/Admin dẫn đến sự cố mạng.
 
 THÔNG TIN SỰ CỐ:
 - Thiết bị: {alert.get('device', 'Unknown')} ({serial})
-- Alert: {alert.get('issue', 'Unknown')}
+- Cảnh báo: {alert.get('issue', 'Unknown')}
 - Org ID: {org_id}
 
-NHẬT KÝ THAY ĐỔI CẤU HÌNH (AUDIT LOG):
+NHẬT KÝ THAY ĐỔI CẤU HÌNH THỰC TẾ (AUDIT LOGS):
 {raw_changes}
 
-Yêu cầu:
-1. Đánh giá xem có thao tác sửa đổi cấu hình nào (đổi VLAN, đổi SSID, sửa luật Firewall, đổi port setting) vừa xảy ra gần đây không.
-2. Nêu rõ tài khoản Admin đã thực hiện (nếu có) và đưa ra nhận định ngắn gọn (dưới 4 dòng).
+YÊU CẦU TRÌNH BÀY BẮT BỘC CHI TIẾT:
+1. TRÍCH XUẤT ĐẦY ĐỦ VÀ CHÍNH XÁC TỪNG MỐC THỜI GIAN:
+   - Nêu rõ Thời gian (Timestamp), Tên Admin, Email Admin, Tên Cổng/Switch (Label), và giá trị trước/sau (Old Value ➔ New Value).
+   - Ví dụ cụ thể: "Lúc 15:44:00, Admin CMC Duc (thongduc@cmc.com.vn) đã chuyển Cổng SW_Internal / 46 từ Port: enabled ➔ disabled."
+2. ĐÁNH GIÁ TÁC ĐỘNG VÀ CHUỖI NGUYÊN NHÂN:
+   - Chỉ rõ hành động nào gây ra sự cố (ngắt nguồn PoE/tắt port) và hành động nào là thao tác sửa chữa khôi phục.
+3. Giữ định dạng rõ ràng, chuyên nghiệp, liệt kê chính xác các mốc sự kiện thực tế.
 """
     sys_prompt = get_system_prompt("audit_config_agent")
     allowed = state.get("allowed_tools", [])
