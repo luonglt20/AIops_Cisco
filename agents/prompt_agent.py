@@ -239,6 +239,13 @@ def run(state: dict, provider: str = None) -> dict:
             "fw_note":  fw_warning,
         }
 
+    # Collect Audit Log note if present
+    audit_note = (
+        bb.get("audit_config_agent", "") or
+        bb.get("audit_config", "") or
+        state.get("notes_audit_config", "")
+    )
+
     # ── LLM-driven Playbook Generation ───────────────────────────────────────
     prompt_sys = get_system_prompt("prompt_agent")
     structured_prompt = f"""Phân tích sự cố mạng và tạo diagnostic playbook JSON.
@@ -248,10 +255,11 @@ def run(state: dict, provider: str = None) -> dict:
 - Cảnh báo: {alert_type} ({severity}) | Thời điểm: {last_seen}
 - Firmware: {firmware}
 {f"- Firmware warning: {fw_warning}" if fw_warning else ""}
-{f"- PoE Note: {poe_note}" if poe_note else ""}
 
 == CHẨN ĐOÁN HỢP NHẤT (Consensus — Confidence: {confidence}) ==
 {consensus_note}
+
+{f"== THAY ĐỔI CẤU HÌNH ADMIN (AUDIT LOGS) ==\n{audit_note}" if audit_note else ""}
 
 {f"== CHUỖI NHÂN QUẢ ==\n{causal_chain}" if causal_chain else ""}
 
@@ -287,35 +295,21 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
             max_tokens=2048,
         )
         if raw_json:
-            raw_json = raw_json.strip()
-            # Strip markdown blocks
-            if raw_json.startswith("```"):
-                lines = raw_json.split("\n")
-                lines = lines[1:] if lines[0].startswith("```") else lines
-                lines = lines[:-1] if lines and lines[-1].startswith("```") else lines
-                raw_json = "\n".join(lines).strip()
-
-            parsed = json.loads(raw_json)
-            if isinstance(parsed, dict):
-                analysis["scope"]        = parsed.get("scope", "isolated")
-                analysis["scope_reason"] = parsed.get("scope_reason", analysis["scope_reason"])
-
-                # Normalize root causes
-                raw_causes = parsed.get("root_causes", [])
-                if raw_causes:
-                    analysis["root_causes"] = []
-                    for rc in raw_causes:
-                        if isinstance(rc, (list, tuple)) and len(rc) >= 3:
-                            analysis["root_causes"].append((str(rc[0]), str(rc[1]), str(rc[2])))
-
-                if parsed.get("api_checks"):
-                    analysis["api_checks"] = parsed["api_checks"][:4]
-                if parsed.get("actions"):
-                    analysis["actions"] = parsed["actions"][:3]
-
-                print("[PromptAgent v6.0] ✅ AI-generated playbook parsed successfully.")
+            parsed = json.loads(raw_json.strip().strip("```json").strip("```"))
+            analysis["scope"] = parsed.get("scope", analysis["scope"])
+            analysis["scope_reason"] = parsed.get("scope_reason", analysis["scope_reason"])
+            if parsed.get("root_causes"):
+                analysis["root_causes"] = [
+                    (item[0], item[1], item[2])
+                    for item in parsed["root_causes"]
+                    if isinstance(item, list) and len(item) == 3
+                ]
+            if parsed.get("api_checks"):
+                analysis["api_checks"] = parsed["api_checks"]
+            if parsed.get("actions"):
+                analysis["actions"] = parsed["actions"]
     except Exception as e:
-        print(f"[PromptAgent v6.0] AI playbook extraction failed ({e}) — using default template.")
+        print(f"[PromptAgent v6.0] LLM generation error ({e}) — using structured defaults.")
         
     state["extracted_analysis"] = analysis
 
@@ -341,7 +335,12 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
         ("firmware_crash_agent",        "🔥 Thu thập thông tin Firmware & Crash Log"),
     ]
     for key, label in telemetry_labels:
-        note = bb.get(key, "")
+        note = (
+            bb.get(key, "") or
+            bb.get(f"{key}_agent", "") or
+            state.get(f"notes_{key}", "") or
+            state.get(f"notes_{key}_agent", "")
+        )
         if note and "Bỏ Qua" not in note and len(note) > 20:
             # Strip confidence tag for cleaner display
             display_note = note.replace("[Confidence: HIGH] ", "").replace("[Confidence: MEDIUM] ", "").replace("[Confidence: LOW] ", "")
@@ -399,8 +398,6 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
         f"  - Nhật ký      : {events_count} events ghi nhận trong cửa sổ giám sát",
     ]
 
-    if analysis.get("poe_note"):
-        prompt_parts.append(f"\n⚠️ Lưu ý PoE: {analysis['poe_note']}")
     if analysis.get("fw_note"):
         prompt_parts.append(f"\n⚠️ Lưu ý Firmware: {analysis['fw_note']}")
 
