@@ -138,22 +138,18 @@ def _fetch_org_summary(org: dict, timespan: int = 604800) -> dict:
             "resolved":  is_resolved,
         }
 
-    # 3. Consolidate alerting, offline, and dormant device statuses into alerts queue
-    
+    # 3. Consolidate offline and dormant device statuses into alerts queue (skip 'alerting' to avoid duplicate alerts)
     for d in result["devices"]["list"]:
         status     = d.get("status", "")
         dev_serial = d.get("serial", "")
         dev_name   = d.get("name", "") or dev_serial
         
-        # In Now mode: ONLY include currently 'alerting' devices (skip old dormant devices)
-        target_statuses = ("alerting",) if is_now_mode else ("alerting", "offline", "dormant")
-        
-        if status in target_statuses:
-            # Check if this device already has an assurance alert in alert_map
+        # Skip 'alerting' because alerting devices already have their actual specific Meraki alerts in alert_map
+        if status in ("offline", "dormant"):
             has_existing = any(k.startswith(f"{dev_serial}:") or k.startswith(f"{dev_name}:") for k in alert_map if dev_serial or dev_name)
             if not has_existing:
                 key = f"{dev_serial or dev_name}:Device is {status}"
-                sev = "CRITICAL" if status in ("alerting", "offline") else "WARNING"
+                sev = "HIGH" if status == "offline" else "MEDIUM"
                 alert_map[key] = {
                     "severity":  sev,
                     "device":    dev_name,
