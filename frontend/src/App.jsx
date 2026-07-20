@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  Activity, 
-  AlertTriangle, 
-  Layers, 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  Bot, 
-  X, 
+import {
+  Activity,
+  AlertTriangle,
+  Layers,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  Bot,
+  X,
   Plus,
   ChevronDown,
   Copy,
@@ -51,11 +51,11 @@ export default function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState('');
   const [liveStatus, setLiveStatus] = useState('Connecting...');
-  
+
   // Navigation & Centralized Filter States
   const [selectedOrgId, setSelectedOrgId] = useState(null);
   const [selectedNetworkId, setSelectedNetworkId] = useState(null);
-  const [deviceFilter, setDeviceFilter] = useState('all'); 
+  const [deviceFilter, setDeviceFilter] = useState('all');
   const [currentTime, setCurrentTime] = useState('');
 
   // Graph UI States (Aggregated latency & warning metrics)
@@ -69,7 +69,7 @@ export default function App() {
   const [analyzeLoading, setAnalyzeLoading] = useState(false);
   const [pipelineState, setPipelineState] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [currentRunningAgent, setCurrentRunningAgent] = useState(0); 
+  const [currentRunningAgent, setCurrentRunningAgent] = useState(0);
   const [toastMsg, setToastMsg] = useState('');
 
   // Node workflow focus state
@@ -111,32 +111,32 @@ export default function App() {
     const computeCoordinates = () => {
       if (!graphContainerRef.current) return;
       const width = graphContainerRef.current.clientWidth || 500;
-      const height = 150; 
+      const height = 150;
       const paddingX = 40;
       const paddingY = 25;
-      
+
       const slots = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
-      
+
       // Calculate dynamic health metric based on current filters
       const total = filteredDevs.length;
       const offlineCount = filteredDevs.filter(d => d.status === 'offline').length;
       const alertingCount = filteredDevs.filter(d => d.status === 'alerting').length;
-      
+
       const baseLatency = total > 0 ? 15 + (alertingCount * 25) + (offlineCount * 40) : 12;
-      
+
       const points = slots.map((time, idx) => {
         const stepX = (width - paddingX * 2) / (slots.length - 1);
         const x = paddingX + idx * stepX;
-        
+
         // Add random variance bound to latency calculation
         const variance = (idx === 2 || idx === 4) && alertingCount > 0 ? 45 * alertingCount : 5;
         const latencyVal = Math.max(10, baseLatency + variance - (idx * 2));
-        
+
         // Scale coordinate
         const maxVal = 180;
         const scaledVal = Math.min(latencyVal, maxVal);
         const y = height - paddingY - (scaledVal / maxVal) * (height - paddingY * 2);
-        
+
         return {
           time,
           latency: Math.round(latencyVal),
@@ -146,7 +146,7 @@ export default function App() {
           y
         };
       });
-      
+
       setGraphPoints(points);
     };
 
@@ -289,9 +289,9 @@ export default function App() {
         body: JSON.stringify({ alert, orgId, modelMode })
       });
       const data = await res.json();
-      
+
       clearInterval(animationInterval);
-      
+
       if (data.status === 'ok') {
         setPipelineState(data);
         setCurrentRunningAgent(7);
@@ -336,7 +336,7 @@ export default function App() {
   };
 
   const selectedOrg = allData.find(o => o.id === selectedOrgId);
-  
+
   // Filters logic
   const filteredDevs = allDevs.filter(d => {
     const matchesOrg = !selectedOrgId || d.orgId === selectedOrgId;
@@ -435,7 +435,7 @@ export default function App() {
       ) {
         const agentName = note.split(':')[0].trim();
         const text = note.replace(`${agentName}:`, '').trim();
-        
+
         let icon = '🎯';
         if (agentName.includes('Security')) icon = '🛡️';
         if (agentName.includes('Firmware')) icon = '🔥';
@@ -444,7 +444,7 @@ export default function App() {
         if (agentName.includes('Switch')) icon = '🔌';
         if (agentName.includes('WAN')) icon = '🌍';
         if (agentName.includes('Client')) icon = '👥';
-        
+
         notesMap['specialized'] = {
           name: agentName,
           role: 'Deep Domain Telemetry',
@@ -660,11 +660,11 @@ export default function App() {
 
   return (
     <div className="h-screen bg-[#f5f6f8] text-[#1d1d1f] flex flex-col antialiased select-none overflow-hidden font-sans grid-bg">
-      
+
       {/* ──── TOAST NOTIFICATION ──── */}
       <AnimatePresence>
         {toastMsg && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -707,7 +707,7 @@ export default function App() {
             <Clock size={12} />
             <span className="font-mono text-[10px] tracking-wider">{currentTime || '00:00:00'}</span>
           </div>
-          
+
           <div className="flex items-center gap-1 py-0.5 px-2 bg-white/10 rounded text-[9px] font-bold">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 glow-ring-cyan animate-pulse" />
             <span className="text-white/80 font-mono tracking-tight shrink-0">{liveStatus}</span>
@@ -721,7 +721,7 @@ export default function App() {
 
       {/* ──── SCREEN CONTENT CONTAINER ──── */}
       <div className="flex-1 flex overflow-hidden">
-        
+
         {/* ──── LEFT SIDEBAR ──── */}
         <aside className="w-60 bg-white border-r border-gray-250 flex flex-col shrink-0 overflow-y-auto">
           <div className="p-4 space-y-4 flex-1">
@@ -733,8 +733,8 @@ export default function App() {
                 </span>
               </div>
               <div className="relative">
-                <select 
-                  value={selectedOrgId || ''} 
+                <select
+                  value={selectedOrgId || ''}
                   onChange={(e) => {
                     const val = e.target.value;
                     setSelectedOrgId(val ? val : null);
@@ -755,7 +755,7 @@ export default function App() {
             <div className="space-y-1">
               <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Network</label>
               <div className="relative">
-                <select 
+                <select
                   value={selectedNetworkId || ''}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -792,11 +792,10 @@ export default function App() {
                   <button
                     key={m.id}
                     onClick={() => setModelMode(m.id)}
-                    className={`py-2 px-1 rounded-xl border text-[9px] font-bold transition-all text-center select-none active:scale-95 flex flex-col justify-center items-center ${
-                      modelMode === m.id 
-                        ? 'bg-[#0c2340] text-white border-[#0c2340] shadow-sm' 
+                    className={`py-2 px-1 rounded-xl border text-[9px] font-bold transition-all text-center select-none active:scale-95 flex flex-col justify-center items-center ${modelMode === m.id
+                        ? 'bg-[#0c2340] text-white border-[#0c2340] shadow-sm'
                         : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <span>{m.lbl}</span>
                     <span className={`text-[7px] font-medium block mt-0.5 ${modelMode === m.id ? 'text-white/60' : 'text-gray-400'}`}>{m.desc}</span>
@@ -818,7 +817,7 @@ export default function App() {
         {/* ──── CENTRAL VIEWPORT ──── */}
         <main className="flex-1 flex flex-col min-w-0 bg-[#f4f6f8] overflow-y-auto relative">
           <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none z-0" />
-          
+
           {/* Header */}
           <div className="bg-white border-b border-gray-250 px-6 py-4 flex items-center justify-between shrink-0 z-10 relative">
             <div>
@@ -846,18 +845,17 @@ export default function App() {
                         fetchData(true, t.val);
                       }
                     }}
-                    className={`py-1 px-2.5 rounded-md text-[10px] font-bold transition-all ${
-                      timespan === t.val
+                    className={`py-1 px-2.5 rounded-md text-[10px] font-bold transition-all ${timespan === t.val
                         ? 'bg-white text-[#0c2340] shadow-sm font-extrabold border border-gray-250'
                         : 'text-gray-500 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     {t.label}
                   </button>
                 ))}
               </div>
 
-              <button 
+              <button
                 disabled={refreshing || loading}
                 onClick={() => fetchData(true)}
                 className="flex items-center gap-1.5 py-1.5 px-3 bg-white border border-gray-200 hover:border-gray-400 rounded-lg text-xs font-semibold transition-all text-gray-700 active:scale-95 disabled:opacity-50"
@@ -875,12 +873,12 @@ export default function App() {
                 <p className="text-xs font-bold text-gray-500 tracking-wider">Đang đồng bộ dữ liệu từ Meraki API...</p>
               </div>
             ) : (
-              <motion.div 
-                initial={{ opacity: 0, y: 5 }} 
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                
+
                 {/* 1. Global Metrics Strip */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
@@ -890,13 +888,13 @@ export default function App() {
                   </div>
 
                   <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
-                    <span className="text-[20px] font-bold tracking-tight block text-green-600">{filteredDevs.filter(d=>d.status==='online').length}</span>
+                    <span className="text-[20px] font-bold tracking-tight block text-green-600">{filteredDevs.filter(d => d.status === 'online').length}</span>
                     <span className="text-[9px] font-bold text-gray-400 uppercase mt-1 block tracking-widest">Online Devices</span>
                     <span className="text-[8px] text-gray-400 block mt-0.5 font-medium">Healthy operations</span>
                   </div>
 
                   <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
-                    <span className="text-[20px] font-bold tracking-tight block text-amber-500">{filteredDevs.filter(d=>d.status==='alerting').length}</span>
+                    <span className="text-[20px] font-bold tracking-tight block text-amber-500">{filteredDevs.filter(d => d.status === 'alerting').length}</span>
                     <span className="text-[9px] font-bold text-gray-400 uppercase mt-1 block tracking-widest">Alerting Devices</span>
                     <span className="text-[8px] text-gray-400 block mt-0.5 font-medium">Action required</span>
                   </div>
@@ -933,7 +931,7 @@ export default function App() {
 
                 {/* 2. COMBINED WIDGET WORKSPACE: OPTION A (Site Topology Matrix) + OPTION C (AIOps Root Cause Radar) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  
+
                   {/* OPTION A: Multi-Network Topology & Site Health Matrix (7/12 cols) */}
                   <div className="lg:col-span-7 bg-white border border-gray-200 rounded-xl shadow-sm p-4 relative overflow-hidden flex flex-col justify-between">
                     <div>
@@ -956,8 +954,8 @@ export default function App() {
                           allRealNetworks = Object.values(uniqueNets);
                         }
 
-                        let displayNetworks = (!selectedOrgId || selectedOrgId === 'all') 
-                          ? allRealNetworks 
+                        let displayNetworks = (!selectedOrgId || selectedOrgId === 'all')
+                          ? allRealNetworks
                           : allRealNetworks.filter(n => String(n.orgId) === String(selectedOrgId));
 
                         const isUsingDefaults = !displayNetworks.length;
@@ -986,14 +984,13 @@ export default function App() {
                                 const isSelected = selectedNetworkId === net.id;
 
                                 return (
-                                  <div 
+                                  <div
                                     key={net.id || idx}
                                     onClick={() => setSelectedNetworkId(isSelected ? null : net.id)}
-                                    className={`border transition-all rounded-xl p-3 select-none cursor-pointer ${
-                                      isSelected 
-                                        ? 'bg-cyan-50/60 border-cyan-500 ring-2 ring-cyan-500/20 shadow-sm' 
+                                    className={`border transition-all rounded-xl p-3 select-none cursor-pointer ${isSelected
+                                        ? 'bg-cyan-50/60 border-cyan-500 ring-2 ring-cyan-500/20 shadow-sm'
                                         : 'bg-gray-50/80 border-gray-200 hover:border-cyan-400'
-                                    }`}
+                                      }`}
                                   >
                                     <div className="flex justify-between items-center mb-1">
                                       <span className="text-[10px] font-bold text-gray-900 truncate" title={net.name}>{net.name}</span>
@@ -1027,7 +1024,7 @@ export default function App() {
 
                       {/* Distribution Bars */}
                       <div className="space-y-2.5">
-                        
+
                         {/* Cause 1: WAN Loss */}
                         <div>
                           <div className="flex justify-between text-[8.5px] font-bold text-gray-700 mb-0.5">
@@ -1089,17 +1086,17 @@ export default function App() {
                 {(() => {
                   const activeCount = allAlerts.filter(a => !a.resolved).length;
                   const resolvedCount = allAlerts.filter(a => a.resolved).length;
-                  
+
                   const filteredAlerts = allAlerts.filter(a => {
                     if (table1Filter === 'active' && a.resolved) return false;
                     if (table1Filter === 'resolved' && !a.resolved) return false;
                     if (table1Search) {
                       const q = table1Search.toLowerCase();
                       return (a.device || '').toLowerCase().includes(q) ||
-                             (a.issue || '').toLowerCase().includes(q) ||
-                             (a.orgName || '').toLowerCase().includes(q) ||
-                             (a.serial || '').toLowerCase().includes(q) ||
-                             (a.model || '').toLowerCase().includes(q);
+                        (a.issue || '').toLowerCase().includes(q) ||
+                        (a.orgName || '').toLowerCase().includes(q) ||
+                        (a.serial || '').toLowerCase().includes(q) ||
+                        (a.model || '').toLowerCase().includes(q);
                     }
                     return true;
                   });
@@ -1236,7 +1233,7 @@ export default function App() {
 
                                     {/* Diagnose Action Button */}
                                     <td className="py-3 px-4 text-center">
-                                      <button 
+                                      <button
                                         onClick={() => triggerAnalysis(a, a.orgId)}
                                         className="py-1 px-3 bg-slate-900 hover:bg-navy text-white rounded-lg font-bold text-[10px] active:scale-95 transition-all inline-flex items-center gap-1.5 shadow-sm group-hover:shadow-md group-hover:bg-blue-600"
                                       >
@@ -1330,7 +1327,7 @@ export default function App() {
         {/* ──── RIGHT COLUMN: INTERACTIVE AGENT WORKSPACE FLOW (LIGHT THEME CODES) ──── */}
         <AnimatePresence>
           {analyzeOpen && (
-            <motion.div 
+            <motion.div
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 440, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
@@ -1343,7 +1340,7 @@ export default function App() {
                   <Bot size={15} className="text-[#0c2340]" />
                   <span className="text-xs font-bold text-gray-800 tracking-tight uppercase">AI Agents Workspace Flow</span>
                 </div>
-                <button 
+                <button
                   onClick={() => setAnalyzeOpen(false)}
                   className="text-gray-400 hover:text-gray-600 w-6 h-6 hover:bg-black/5 rounded-lg flex items-center justify-center transition-all"
                 >
@@ -1360,11 +1357,10 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => { setActiveDrawerTab(tab.id); }}
-                    className={`flex-1 py-1.5 rounded-lg transition-all text-center select-none flex items-center justify-center gap-1.5 ${
-                      activeDrawerTab === tab.id 
-                        ? 'bg-white text-gray-800 shadow-sm border border-gray-200 font-extrabold' 
+                    className={`flex-1 py-1.5 rounded-lg transition-all text-center select-none flex items-center justify-center gap-1.5 ${activeDrawerTab === tab.id
+                        ? 'bg-white text-gray-800 shadow-sm border border-gray-200 font-extrabold'
                         : 'hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     {tab.icon}
                     <span>{tab.label}</span>
@@ -1374,7 +1370,7 @@ export default function App() {
 
               {/* Drawer Main Body */}
               <div className="flex-1 overflow-y-auto p-4 space-y-5">
-                
+
                 {/* Context Target Alarm */}
                 {analyzingAlert && (
                   <div className="p-3.5 bg-blue-50/40 border border-blue-100 rounded-xl flex flex-col gap-1 text-[10px]">
@@ -1389,7 +1385,7 @@ export default function App() {
                 {/* ──── TAB 1: WORKFLOW GRAPH MAP WORKSPACE ──── */}
                 {activeDrawerTab === 'workflow' && (
                   <div className="space-y-5">
-                    
+
                     {/* Agent Workflow Header Bar */}
                     <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -1402,9 +1398,9 @@ export default function App() {
                     {/* SVG Interactive Multi-Agent DAG Visual Flow Canvas */}
                     <div className="relative border border-gray-200 bg-gray-50/50 rounded-xl p-4 overflow-hidden shadow-sm">
                       <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
-                      
+
                       <div className="relative flex flex-col items-center gap-4 py-1">
-                        
+
                         {/* 1. Alarm Input Node */}
                         <div className="w-48 bg-white border border-red-200 rounded-xl p-2.5 text-center shadow-sm relative">
                           <div className="absolute top-1/2 -translate-y-1/2 left-3 w-2 h-2 rounded-full bg-red-500 animate-ping" />
@@ -1419,19 +1415,18 @@ export default function App() {
                         </svg>
 
                         {/* 2. Coordinator Node (Root Orchestrator) */}
-                        <button 
+                        <button
                           onClick={() => setFocusedAgentKey('coordinator')}
-                          className={`w-56 rounded-xl p-2.5 transition-all text-center relative select-none cursor-pointer border ${
-                            focusedAgentKey === 'coordinator' 
-                              ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                          className={`w-56 rounded-xl p-2.5 transition-all text-center relative select-none cursor-pointer border ${focusedAgentKey === 'coordinator'
+                              ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                               : 'bg-white border-gray-200 hover:border-gray-300'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-1.5 justify-center">
                             <span className="text-[9.5px] font-bold uppercase text-gray-800 tracking-wider">COORDINATOR AGENT</span>
                           </div>
                           <span className="text-[8px] text-gray-500 block mt-0.5 font-medium">Orchestrates 12 Specialized AI Agents</span>
-                          
+
                           <div className="absolute top-2 right-2 flex items-center gap-1">
                             <span className="text-[7px] font-mono font-bold px-1 py-0.2 rounded bg-cyan-50 text-cyan-700 border border-cyan-200">98% CONF</span>
                             {renderAgentBadgeStatus(getAgentRunningStatus('coordinator', 1))}
@@ -1446,20 +1441,18 @@ export default function App() {
 
                         {/* 3. Specialized New Agents Row 1: Audit & App QoE */}
                         <div className="grid grid-cols-2 gap-3 w-full">
-                          
+
                           {/* AuditConfigAgent Node */}
-                          <div className={`transition-all duration-700 ease-in-out origin-top ${
-                            shouldShowNode('audit_config', 2)
+                          <div className={`transition-all duration-700 ease-in-out origin-top ${shouldShowNode('audit_config', 2)
                               ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                               : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                          }`}>
-                            <button 
+                            }`}>
+                            <button
                               onClick={() => setFocusedAgentKey('audit_config')}
-                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative bg-white ${
-                                focusedAgentKey === 'audit_config' 
-                                  ? 'border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative bg-white ${focusedAgentKey === 'audit_config'
+                                  ? 'border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                   : 'border-gray-200 hover:border-gray-300'
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">AUDIT CONFIG AGENT</span>
@@ -1480,18 +1473,16 @@ export default function App() {
                           </div>
 
                           {/* AppQoEAgent Node */}
-                          <div className={`transition-all duration-700 ease-in-out origin-top ${
-                            shouldShowNode('app_qoe', 2)
+                          <div className={`transition-all duration-700 ease-in-out origin-top ${shouldShowNode('app_qoe', 2)
                               ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                               : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                          }`}>
-                            <button 
+                            }`}>
+                            <button
                               onClick={() => setFocusedAgentKey('app_qoe')}
-                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative bg-white ${
-                                focusedAgentKey === 'app_qoe' 
-                                  ? 'border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative bg-white ${focusedAgentKey === 'app_qoe'
+                                  ? 'border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                   : 'border-gray-200 hover:border-gray-300'
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">APP QOE AGENT</span>
@@ -1515,36 +1506,33 @@ export default function App() {
 
                         {/* 4. Parallel Core Agents Grid (Row 2) */}
                         <div className="grid grid-cols-2 gap-3 w-full">
-                          
+
                           {/* DeviceIntel Agent Node Container */}
-                          <div className={`transition-all duration-700 ease-in-out origin-top ${
-                            shouldShowNode('device_intel', 2)
+                          <div className={`transition-all duration-700 ease-in-out origin-top ${shouldShowNode('device_intel', 2)
                               ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                               : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                          }`}>
-                            <button 
+                            }`}>
+                            <button
                               onClick={() => setFocusedAgentKey('device_intel')}
                               disabled={getAgentRunningStatus('device_intel', 2) === 'skipped'}
-                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${
-                                focusedAgentKey === 'device_intel' 
-                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${focusedAgentKey === 'device_intel'
+                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                   : 'bg-white border-gray-200 hover:border-gray-300'
-                              } disabled:opacity-50`}
+                                } disabled:opacity-50`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">DEVICE INTEL AGENT</span>
                               </div>
                               <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">{getDeviceIntelSubtitle()}</span>
-                              
+
                               {/* Live telemetry summary badges */}
                               {pipelineState && pipelineState.device_detail && (
                                 <div className="mt-1.5 flex flex-wrap gap-1">
                                   <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-tight">
                                     {pipelineState.device_detail.model || analyzingAlert?.model || 'Device'}
                                   </span>
-                                  <span className={`text-[6.5px] font-black px-1 py-0.2 rounded border uppercase tracking-tight ${
-                                    pipelineState.device_detail.status === 'online' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
-                                  }`}>
+                                  <span className={`text-[6.5px] font-black px-1 py-0.2 rounded border uppercase tracking-tight ${pipelineState.device_detail.status === 'online' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                                    }`}>
                                     {pipelineState.device_detail.status || 'ONLINE'}
                                   </span>
                                 </div>
@@ -1557,25 +1545,23 @@ export default function App() {
                           </div>
 
                           {/* EventLog Agent Node Container */}
-                          <div className={`transition-all duration-700 ease-in-out origin-top ${
-                            shouldShowNode('event_log', 3)
+                          <div className={`transition-all duration-700 ease-in-out origin-top ${shouldShowNode('event_log', 3)
                               ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                               : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                          }`}>
-                            <button 
+                            }`}>
+                            <button
                               onClick={() => setFocusedAgentKey('event_log')}
                               disabled={getAgentRunningStatus('event_log', 3) === 'skipped'}
-                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${
-                                focusedAgentKey === 'event_log' 
-                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${focusedAgentKey === 'event_log'
+                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                   : 'bg-white border-gray-200 hover:border-gray-300'
-                              } disabled:opacity-50`}
+                                } disabled:opacity-50`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">EVENT LOG AGENT</span>
                               </div>
                               <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">{getEventLogSubtitle()}</span>
-                              
+
                               {/* Live telemetry summary badges */}
                               {pipelineState && (
                                 <div className="mt-1.5 flex flex-wrap gap-1">
@@ -1595,25 +1581,23 @@ export default function App() {
                           </div>
 
                           {/* Client Agent Node Container */}
-                          <div className={`transition-all duration-700 ease-in-out origin-top ${
-                            shouldShowNode('client_agent', 4)
+                          <div className={`transition-all duration-700 ease-in-out origin-top ${shouldShowNode('client_agent', 4)
                               ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                               : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                          }`}>
-                            <button 
+                            }`}>
+                            <button
                               onClick={() => setFocusedAgentKey('client_agent')}
                               disabled={getAgentRunningStatus('client_agent', 4) === 'skipped'}
-                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${
-                                focusedAgentKey === 'client_agent' 
-                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${focusedAgentKey === 'client_agent'
+                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                   : 'bg-white border-gray-200 hover:border-gray-300'
-                              } disabled:opacity-50`}
+                                } disabled:opacity-50`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">CLIENT IMPACT AGENT</span>
                               </div>
                               <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">{getClientAgentSubtitle()}</span>
-                              
+
                               {/* Live telemetry summary badges */}
                               {pipelineState && (
                                 <div className="mt-1.5 flex flex-wrap gap-1">
@@ -1633,31 +1617,28 @@ export default function App() {
                           </div>
 
                           {/* Uplink WAN Agent Node Container */}
-                          <div className={`transition-all duration-700 ease-in-out origin-top ${
-                            shouldShowNode('uplink_agent', 5)
+                          <div className={`transition-all duration-700 ease-in-out origin-top ${shouldShowNode('uplink_agent', 5)
                               ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                               : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                          }`}>
-                            <button 
+                            }`}>
+                            <button
                               onClick={() => setFocusedAgentKey('uplink_agent')}
                               disabled={getAgentRunningStatus('uplink_agent', 5) === 'skipped'}
-                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${
-                                focusedAgentKey === 'uplink_agent' 
-                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                              className={`w-full rounded-xl p-2.5 border transition-all text-left relative ${focusedAgentKey === 'uplink_agent'
+                                  ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                   : 'bg-white border-gray-200 hover:border-gray-300'
-                              } disabled:opacity-50`}
+                                } disabled:opacity-50`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">UPLINK WAN AGENT</span>
                               </div>
                               <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">{getUplinkAgentSubtitle()}</span>
-                              
+
                               {/* Live telemetry summary badges */}
                               {pipelineState && pipelineState.telemetry && (
                                 <div className="mt-1.5 flex flex-wrap gap-1">
-                                  <span className={`text-[6.5px] font-black px-1 py-0.2 rounded border uppercase tracking-tight ${
-                                    (pipelineState.telemetry.wan?.avg_loss_pct ?? 0) > 1 ? 'bg-red-50 text-red-700 border-red-100' : 'bg-teal-50 text-teal-700 border-teal-100'
-                                  }`}>
+                                  <span className={`text-[6.5px] font-black px-1 py-0.2 rounded border uppercase tracking-tight ${(pipelineState.telemetry.wan?.avg_loss_pct ?? 0) > 1 ? 'bg-red-50 text-red-700 border-red-100' : 'bg-teal-50 text-teal-700 border-teal-100'
+                                    }`}>
                                     {pipelineState.telemetry.wan?.avg_loss_pct ?? 0}% Loss
                                   </span>
                                   <span className="text-[6.5px] font-black px-1 py-0.2 rounded bg-sky-50 text-sky-700 border border-sky-100 uppercase tracking-tight">
@@ -1680,25 +1661,23 @@ export default function App() {
                         </svg>
 
                         {/* 5. Specialized Agent Node Container (Spans full width) */}
-                        <div className={`w-full transition-all duration-700 ease-in-out origin-top ${
-                          shouldShowNode('device_intel', 2)
+                        <div className={`w-full transition-all duration-700 ease-in-out origin-top ${shouldShowNode('device_intel', 2)
                             ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                             : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                        }`}>
-                          <button 
+                          }`}>
+                          <button
                             onClick={() => setFocusedAgentKey('specialized')}
                             disabled={getAgentRunningStatus('device_intel', 2) === 'skipped'}
-                            className={`w-full rounded-xl p-2.5 border transition-all text-center relative ${
-                              focusedAgentKey === 'specialized' 
-                                ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md' 
+                            className={`w-full rounded-xl p-2.5 border transition-all text-center relative ${focusedAgentKey === 'specialized'
+                                ? 'bg-white border-[#0c2340] ring-2 ring-[#0c2340]/20 shadow-md'
                                 : 'bg-white border-gray-200 hover:border-gray-300'
-                            } disabled:opacity-50`}
+                              } disabled:opacity-50`}
                           >
                             <div className="flex justify-center items-center gap-1.5">
                               <span className="text-[9px] font-bold uppercase tracking-wider text-gray-800">{parsedNotes['specialized']?.name || 'Specialized Collector Agent'}</span>
                             </div>
                             <span className="text-[7px] text-gray-500 block mt-0.5 font-mono truncate font-medium">{parsedNotes['specialized']?.role || 'Deep Domain Telemetry'}</span>
-                            
+
                             {/* Live telemetry summary badges */}
                             {pipelineState && pipelineState.assigned_agent && (
                               <div className="mt-1.5 flex justify-center flex-wrap gap-1">
@@ -1721,34 +1700,32 @@ export default function App() {
                         </svg>
 
                         {/* 6. Verify Agent Node Container */}
-                        <div className={`w-full transition-all duration-700 ease-in-out origin-top flex justify-center ${
-                          pipelineState && parsedNotes['verify']
+                        <div className={`w-full transition-all duration-700 ease-in-out origin-top flex justify-center ${pipelineState && parsedNotes['verify']
                             ? 'opacity-100 scale-100 max-h-40 pointer-events-auto'
                             : 'opacity-0 scale-90 max-h-0 overflow-hidden pointer-events-none'
-                        }`}>
-                        <button 
-                          onClick={() => setFocusedAgentKey('verify')}
-                          className={`w-3/4 rounded-xl p-2.5 border transition-all text-center relative ${
-                            focusedAgentKey === 'verify' 
-                              ? 'bg-white border-green-700 ring-2 ring-green-700/20 shadow-md' 
-                              : 'bg-white border-green-200 hover:border-green-300'
-                          }`}
-                        >
-                          <div className="flex justify-center items-center gap-1.5">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-green-800">VERIFY AGENT (QUALITY CONTROL)</span>
-                          </div>
-                          <span className="text-[7.5px] text-green-700 block mt-0.5 font-mono truncate font-semibold">Playbook Approval Verified</span>
-                          
-                          <div className="absolute top-1.5 right-1.5 flex items-center">
-                            {renderAgentBadgeStatus(getAgentRunningStatus('verify', 6))}
-                          </div>
-                        </button>
+                          }`}>
+                          <button
+                            onClick={() => setFocusedAgentKey('verify')}
+                            className={`w-3/4 rounded-xl p-2.5 border transition-all text-center relative ${focusedAgentKey === 'verify'
+                                ? 'bg-white border-green-700 ring-2 ring-green-700/20 shadow-md'
+                                : 'bg-white border-green-200 hover:border-green-300'
+                              }`}
+                          >
+                            <div className="flex justify-center items-center gap-1.5">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-green-800">VERIFY AGENT (QUALITY CONTROL)</span>
+                            </div>
+                            <span className="text-[7.5px] text-green-700 block mt-0.5 font-mono truncate font-semibold">Playbook Approval Verified</span>
+
+                            <div className="absolute top-1.5 right-1.5 flex items-center">
+                              {renderAgentBadgeStatus(getAgentRunningStatus('verify', 6))}
+                            </div>
+                          </button>
+                        </div>
+
                       </div>
-
                     </div>
-                  </div>
 
-                  {/* Báo Cáo Tổng Hợp (Aggregated Agent Info) - Placed below the agent flow */}
+                    {/* Báo Cáo Tổng Hợp (Aggregated Agent Info) - Placed below the agent flow */}
                     {pipelineState && pipelineState.summary_report && (
                       <div className="mt-8 w-full max-w-3xl mx-auto relative z-10">
                         <div className="flex justify-center mb-4">
@@ -1772,11 +1749,10 @@ export default function App() {
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">📊 Bằng Chứng Log & Telemetry Thu Thập Được</span>
                         {pipelineState && focusedAgentKey && parsedNotes[focusedAgentKey]?.confidence && (
-                          <span className={`text-[8px] font-bold border px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                            parsedNotes[focusedAgentKey].confidence === 'HIGH' ? 'bg-green-50 text-green-700 border-green-200' :
-                            parsedNotes[focusedAgentKey].confidence === 'MEDIUM' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            'bg-red-50 text-red-700 border-red-200'
-                          }`}>
+                          <span className={`text-[8px] font-bold border px-2 py-0.5 rounded-full uppercase tracking-wider ${parsedNotes[focusedAgentKey].confidence === 'HIGH' ? 'bg-green-50 text-green-700 border-green-200' :
+                              parsedNotes[focusedAgentKey].confidence === 'MEDIUM' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                'bg-red-50 text-red-700 border-red-200'
+                            }`}>
                             Confidence: {parsedNotes[focusedAgentKey].confidence}
                           </span>
                         )}
@@ -1784,9 +1760,9 @@ export default function App() {
 
                       <div className="bg-[#0c2340] border border-[#003d7a] rounded-xl p-4 shadow-sm min-h-32 text-white relative">
                         {focusedAgentKey && (
-                          parsedNotes[focusedAgentKey] || 
-                          focusedAgentKey === 'coordinator' || 
-                          focusedAgentKey === 'audit_config' || 
+                          parsedNotes[focusedAgentKey] ||
+                          focusedAgentKey === 'coordinator' ||
+                          focusedAgentKey === 'audit_config' ||
                           focusedAgentKey === 'app_qoe'
                         ) ? (
                           <div className="space-y-2.5">
@@ -1794,27 +1770,27 @@ export default function App() {
                               <div>
                                 <h5 className="text-[10px] font-black text-white uppercase tracking-wider">
                                   {focusedAgentKey === 'coordinator' ? 'Coordinator Agent' :
-                                   focusedAgentKey === 'audit_config' ? 'AuditConfigAgent' :
-                                   focusedAgentKey === 'app_qoe' ? 'AppQoEAgent' :
-                                   parsedNotes[focusedAgentKey]?.name}
+                                    focusedAgentKey === 'audit_config' ? 'AuditConfigAgent' :
+                                      focusedAgentKey === 'app_qoe' ? 'AppQoEAgent' :
+                                        parsedNotes[focusedAgentKey]?.name}
                                 </h5>
                                 <span className="text-[8px] text-white/50 block font-mono uppercase tracking-wider">
                                   {focusedAgentKey === 'coordinator' ? 'Routing engine' :
-                                   focusedAgentKey === 'audit_config' ? 'Config Changes & Human Error Audit' :
-                                   focusedAgentKey === 'app_qoe' ? 'VoIP, SaaS & Webex/Zoom QoE Analyzer' :
-                                   parsedNotes[focusedAgentKey]?.role}
+                                    focusedAgentKey === 'audit_config' ? 'Config Changes & Human Error Audit' :
+                                      focusedAgentKey === 'app_qoe' ? 'VoIP, SaaS & Webex/Zoom QoE Analyzer' :
+                                        parsedNotes[focusedAgentKey]?.role}
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div className="text-[10px] text-white/90 leading-relaxed font-semibold">
-                              {focusedAgentKey === 'coordinator' 
-                                ? (pipelineState?.agent_notes?.[0]?.replace('Coordinator Agent:', '').trim() || 'Lập kế hoạch và định tuyến dữ liệu chẩn đoán.') 
+                              {focusedAgentKey === 'coordinator'
+                                ? (pipelineState?.agent_notes?.[0]?.replace('Coordinator Agent:', '').trim() || 'Lập kế hoạch và định tuyến dữ liệu chẩn đoán.')
                                 : focusedAgentKey === 'audit_config'
-                                ? (parsedNotes['audit_config']?.content || 'Agent đã kiểm tra nhật ký thay đổi cấu hình (Organization Audit Logs) trong 7 ngày qua. Không phát hiện thao tác chỉnh sửa VLAN, Firewall, hay SSID bất thường của Admin nào gây ảnh hưởng đến sự cố này.')
-                                : focusedAgentKey === 'app_qoe'
-                                ? (parsedNotes['app_qoe']?.content || 'Agent đã đo lường chất lượng dịch vụ ứng dụng Cisco Insight QoE & Webex/Zoom. Điểm MOS trung bình 4.2/5.0, độ trễ họp trực tuyến đạt mức tối ưu (Latency 32ms, Loss 0.03%), không có nghẽn băng thông L7.')
-                                : parsedNotes[focusedAgentKey]?.content}
+                                  ? (parsedNotes['audit_config']?.content || 'Agent đã kiểm tra nhật ký thay đổi cấu hình (Organization Audit Logs) trong 7 ngày qua. Không phát hiện thao tác chỉnh sửa VLAN, Firewall, hay SSID bất thường của Admin nào gây ảnh hưởng đến sự cố này.')
+                                  : focusedAgentKey === 'app_qoe'
+                                    ? (parsedNotes['app_qoe']?.content || 'Agent đã đo lường chất lượng dịch vụ ứng dụng Cisco Insight QoE & Webex/Zoom. Điểm MOS trung bình 4.2/5.0, độ trễ họp trực tuyến đạt mức tối ưu (Latency 32ms, Loss 0.03%), không có nghẽn băng thông L7.')
+                                    : parsedNotes[focusedAgentKey]?.content}
                             </div>
                           </div>
                         ) : analyzeLoading ? (
@@ -1842,7 +1818,7 @@ export default function App() {
                         <div className="space-y-3 pt-1">
                           <div className="flex justify-between items-center">
                             <h4 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Playbook Choice ({activePromptTab.toUpperCase()})</h4>
-                            <button 
+                            <button
                               onClick={async () => {
                                 const text = activePromptTab === 'groq' ? pipelineState.prompt_groq : activePromptTab === 'gemini' ? pipelineState.prompt_gemini : pipelineState.prompt_ollama;
                                 if (!text) return;
@@ -1851,9 +1827,8 @@ export default function App() {
                                 showToast('📋 Technical prompt copied!');
                                 setTimeout(() => setCopied(false), 3000);
                               }}
-                              className={`py-1 px-3 rounded-lg text-[9px] font-bold flex items-center gap-1 transition-all active:scale-95 ${
-                                copied ? 'bg-green-600 text-white' : 'bg-[#0c2340] text-white'
-                              }`}
+                              className={`py-1 px-3 rounded-lg text-[9px] font-bold flex items-center gap-1 transition-all active:scale-95 ${copied ? 'bg-green-600 text-white' : 'bg-[#0c2340] text-white'
+                                }`}
                             >
                               {copied ? <Check size={10} /> : <Copy size={10} />}
                               {copied ? 'Copied!' : 'Copy Playbook'}
@@ -1910,7 +1885,7 @@ export default function App() {
                             </div>
                           </div>
 
-                          <textarea 
+                          <textarea
                             readOnly
                             value={activePromptTab === 'groq' ? pipelineState.prompt_groq : activePromptTab === 'gemini' ? pipelineState.prompt_gemini : pipelineState.prompt_ollama}
                             className="w-full h-80 p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none font-mono text-[9px] leading-relaxed text-gray-750 resize-none overflow-y-auto"
@@ -1921,18 +1896,17 @@ export default function App() {
                         <div className="space-y-3 pt-1">
                           <div className="flex justify-between items-center">
                             <h4 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">📋 Final playbook ({modelMode.toUpperCase()})</h4>
-                            <button 
+                            <button
                               onClick={copyPrompt}
-                              className={`py-1 px-3.5 rounded-lg text-[9px] font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
-                                copied ? 'bg-green-600 text-white shadow-green-200' : 'bg-[#0c2340] text-white shadow-sm'
-                              }`}
+                              className={`py-1 px-3.5 rounded-lg text-[9px] font-bold flex items-center gap-1.5 transition-all active:scale-95 ${copied ? 'bg-green-600 text-white shadow-green-200' : 'bg-[#0c2340] text-white shadow-sm'
+                                }`}
                             >
                               {copied ? <Check size={11} /> : <Copy size={11} />}
                               {copied ? 'Copied!' : 'Copy Playbook'}
                             </button>
                           </div>
 
-                          <textarea 
+                          <textarea
                             readOnly
                             value={pipelineState.prompt}
                             className="w-full h-[400px] p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none font-mono text-[9px] leading-relaxed text-gray-750 resize-none overflow-y-auto"
