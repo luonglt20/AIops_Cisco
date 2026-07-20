@@ -320,36 +320,65 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
     seen_labels = set()
     agent_label_mapping = {
         "device_intel": "⚙️ Thông số Thiết bị & Phần cứng",
+        "device_intel_agent": "⚙️ Thông số Thiết bị & Phần cứng",
         "event_log": "📋 Nhật ký Sự kiện",
+        "event_log_agent": "📋 Nhật ký Sự kiện",
+        "client": "👥 Tác động Người dùng",
         "client_agent": "👥 Tác động Người dùng",
+        "uplink": "🌐 Trạng thái Đường truyền WAN",
         "uplink_agent": "🌐 Trạng thái Đường truyền WAN",
         "audit_config": "📝 Lịch sử Thay đổi Cấu hình (Audit Log)",
         "audit_config_agent": "📝 Lịch sử Thay đổi Cấu hình (Audit Log)",
         "app_qoe": "📊 Chất lượng Trải nghiệm Ứng dụng & VoIP",
         "app_qoe_agent": "📊 Chất lượng Trải nghiệm Ứng dụng & VoIP",
-        "correlation_agent": "🔄 Phân tích Tương quan Chéo Mạng (Correlation)",
         "correlation": "🔄 Phân tích Tương quan Chéo Mạng (Correlation)",
+        "correlation_agent": "🔄 Phân tích Tương quan Chéo Mạng (Correlation)",
+        "rf_wireless": "📡 Thu thập thông tin RF & Wireless",
         "rf_wireless_agent": "📡 Thu thập thông tin RF & Wireless",
+        "switch_port": "🔌 Thu thập thông tin Switch Port & Cáp",
         "switch_port_agent": "🔌 Thu thập thông tin Switch Port & Cáp",
+        "wan_sdwan": "🌐 Thu thập thông tin WAN & VPN",
         "wan_sdwan_agent": "🌐 Thu thập thông tin WAN & VPN",
+        "sensor_iot": "🌡️ Thu thập thông tin Sensor IoT",
         "sensor_iot_agent": "🌡️ Thu thập thông tin Sensor IoT",
+        "security_airmarshal": "🛡️ Thu thập thông tin Security & WIDS",
         "security_airmarshal_agent": "🛡️ Thu thập thông tin Security & WIDS",
+        "client_experience": "📱 Thu thập thông tin Client Experience",
         "client_experience_agent": "📱 Thu thập thông tin Client Experience",
+        "firmware_crash": "🔥 Thu thập thông tin Firmware & Crash Log",
         "firmware_crash_agent": "🔥 Thu thập thông tin Firmware & Crash Log",
     }
 
-    # Helper function to append note
+    # Helper function to append and condense note
     def _add_note(key_name: str, raw_note: str):
         if not raw_note or not isinstance(raw_note, str) or "Bỏ Qua" in raw_note or len(raw_note.strip()) <= 15:
             return
         clean_key = key_name.replace("notes_", "").replace("_agent", "")
-        label = agent_label_mapping.get(key_name) or agent_label_mapping.get(clean_key) or f"🤖 {key_name.title()}"
+        label = agent_label_mapping.get(key_name) or agent_label_mapping.get(clean_key) or agent_label_mapping.get(f"{clean_key}_agent")
+        if not label:
+            label = f"🤖 {clean_key.title()} Agent"
         if label in seen_labels:
             return
         seen_labels.add(label)
+
+        # Clean up boilerplate text
         display_note = raw_note.replace("[Confidence: HIGH] ", "").replace("[Confidence: MEDIUM] ", "").replace("[Confidence: LOW] ", "")
         display_note = display_note.replace("  * ", "    - ").replace("  + ", "      - ").replace("* ", "  - ").replace("+ ", "    - ")
-        indented_note = "\n".join([f"  {line}" for line in display_note.split("\n")])
+        
+        # Filter out repetitive preambles
+        lines = []
+        for l in display_note.split("\n"):
+            l_str = l.strip()
+            if l_str.startswith("Dựa vào tool") and "thu được" in l_str:
+                continue  # strip repetitive tool preambles
+            if l_str:
+                lines.append(l)
+        
+        # Condense long lists (max 8 key lines per agent)
+        if len(lines) > 8:
+            lines = lines[:8] + ["  - (...) [Tóm tắt bớt các thông số chi tiết lặp lại]"]
+            
+        indented_note = "\n".join([f"  {line}" for line in lines])
         active_notes.append(f"• {label}:\n{indented_note}\n")
 
     # 1. Scan predefined labels list first for consistent ordering
