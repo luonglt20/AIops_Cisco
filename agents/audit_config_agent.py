@@ -33,6 +33,9 @@ def _tool_config_changes(org_id: str) -> str:
             {
                 "ts": c.get("ts"),
                 "admin": c.get("adminName") or c.get("adminEmail"),
+                "adminEmail": c.get("adminEmail"),
+                "networkName": c.get("networkName"),
+                "page": c.get("page"),
                 "label": c.get("label"),
                 "oldValue": c.get("oldValue"),
                 "newValue": c.get("newValue"),
@@ -67,9 +70,25 @@ Yêu cầu:
 2. Nêu rõ tài khoản Admin đã thực hiện (nếu có) và đưa ra nhận định ngắn gọn (dưới 4 dòng).
 """
     sys_prompt = get_system_prompt("audit_config_agent")
+    allowed = state.get("allowed_tools", [])
+    active_registry = {k: v for k, v in TOOL_REGISTRY.items() if not allowed or k in allowed}
+
     try:
-        res = run_react_loop("audit_config_agent", prompt, sys_prompt, TOOL_REGISTRY, net_id, serial)
-        return res or "Không phát hiện thay đổi cấu hình bất thường nào gây ra sự cố."
+        final_note = run_react_loop(
+            agent_name="audit_config_agent",
+            base_prompt=prompt,
+            tool_registry=active_registry,
+            tool_args=(net_id, serial, org_id),
+            max_iterations=2,
+            system_prompt=sys_prompt,
+            alert_ctx=alert,
+        )
+        final_note = final_note or "Không phát hiện thay đổi cấu hình bất thường nào gây ra sự cố."
+        state.setdefault("blackboard", {})["audit_config_agent"] = final_note
+        print(f"[AuditConfigAgent] Diagnosis generated (length={len(final_note)})")
+        return final_note
     except Exception as e:
         print(f"[AuditConfigAgent] Error: {e}")
-        return "Không ghi nhận thao tác thay đổi cấu hình con người nào ảnh hưởng đến sự cố này."
+        fallback = "Không ghi nhận thao tác thay đổi cấu hình con người nào ảnh hưởng đến sự cố này."
+        state.setdefault("blackboard", {})["audit_config_agent"] = fallback
+        return fallback

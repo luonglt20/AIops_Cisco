@@ -10,11 +10,11 @@ from agents.system_prompts import get_system_prompt
 
 
 TOOL_REGISTRY = {
-    "get_insight_monitored_media_servers": lambda org_id, net_id: _tool_media_servers(org_id),
-    "get_network_insight_app_health": lambda org_id, net_id: _tool_app_health(net_id),
-    "get_network_insight_application_health": lambda org_id, net_id: meraki.get_network_insight_application_health(net_id),
-    "get_app_specific_health": lambda org_id, net_id: meraki.get_app_specific_health(net_id),
-    "get_voip_jitter_stats": lambda org_id, net_id: meraki.get_voip_jitter_stats(org_id),
+    "get_insight_monitored_media_servers": lambda net_id, serial, org_id: _tool_media_servers(org_id),
+    "get_network_insight_app_health": lambda net_id, serial, org_id: _tool_app_health(net_id),
+    "get_network_insight_application_health": lambda net_id, serial, org_id: meraki.get_network_insight_application_health(net_id),
+    "get_app_specific_health": lambda net_id, serial, org_id: meraki.get_app_specific_health(net_id),
+    "get_voip_jitter_stats": lambda net_id, serial, org_id: meraki.get_voip_jitter_stats(org_id),
 }
 
 
@@ -69,9 +69,25 @@ Yêu cầu:
 2. Đưa ra kết luận ngắn gọn (dưới 4 dòng).
 """
     sys_prompt = get_system_prompt("app_qoe_agent")
+    allowed = state.get("allowed_tools", [])
+    active_registry = {k: v for k, v in TOOL_REGISTRY.items() if not allowed or k in allowed}
+
     try:
-        res = run_react_loop("app_qoe_agent", prompt, sys_prompt, TOOL_REGISTRY, net_id, serial)
-        return res or "Ứng dụng SaaS và chất lượng cuộc gọi truyền thông chưa bị tác động tiêu cực."
+        final_note = run_react_loop(
+            agent_name="app_qoe_agent",
+            base_prompt=prompt,
+            tool_registry=active_registry,
+            tool_args=(net_id, serial, org_id),
+            max_iterations=2,
+            system_prompt=sys_prompt,
+            alert_ctx=alert,
+        )
+        final_note = final_note or "Ứng dụng SaaS và chất lượng cuộc gọi truyền thông chưa bị tác động tiêu cực."
+        state.setdefault("blackboard", {})["app_qoe_agent"] = final_note
+        print(f"[AppQoEAgent] Diagnosis generated (length={len(final_note)})")
+        return final_note
     except Exception as e:
         print(f"[AppQoEAgent] Error: {e}")
-        return "Chưa ghi nhận suy hao trải nghiệm ứng dụng SaaS / cuộc họp online."
+        fallback = "Chưa ghi nhận suy hao trải nghiệm ứng dụng SaaS / cuộc họp online."
+        state.setdefault("blackboard", {})["app_qoe_agent"] = fallback
+        return fallback
