@@ -364,7 +364,7 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
         # Clean up confidence badges
         display_note = raw_note.replace("[Confidence: HIGH] ", "").replace("[Confidence: MEDIUM] ", "").replace("[Confidence: LOW] ", "")
         
-        # Line-by-line bullet normalization & markdown repair without corrupting bold **text**
+        # Line-by-line note cleaning: strip confidence badges, preambles, dividers, and triple asterisks ***
         lines = []
         for line in display_note.split("\n"):
             l_str = line.strip()
@@ -373,14 +373,14 @@ NHIỆM VỤ: Trả về JSON object với đúng 5 trường sau (raw JSON, kh�
             if not l_str or l_str in ("***", "---", "___"):
                 continue  # strip markdown horizontal dividers
 
-            # Replace any triple or quadruple asterisks *** with standard bold **
-            cleaned_line = re.sub(r"\*{3,}", "**", line)
+            # Remove all triple asterisks *** directly and cleanly
+            cleaned_line = line.replace("***", "")
 
-            # Convert leading bullets (*, +) to (-) without touching bold **
-            cleaned_line = re.sub(r"^(\s*)[*+](?!\*)\s*", r"\1- ", cleaned_line)
-            
-            # Repair orphaned broken bold markers like "**text:*" -> "**text:**"
-            cleaned_line = re.sub(r"\*\*([^*]+):\*(?!\*)", r"**\1:**", cleaned_line)
+            # Normalize leading bullet symbols (*, +) to standard (-)
+            if cleaned_line.lstrip().startswith("* ") or cleaned_line.lstrip().startswith("+ "):
+                indent = len(cleaned_line) - len(cleaned_line.lstrip())
+                cleaned_line = " " * indent + "- " + cleaned_line.lstrip()[2:]
+
             lines.append(cleaned_line)
 
         indented_note = "\n".join([f"  {line}" for line in lines])
